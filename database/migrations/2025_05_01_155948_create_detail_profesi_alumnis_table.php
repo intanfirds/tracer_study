@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('detail_profesi_alumnis', function (Blueprint $table) {
-            $table->id('ID_Detail_Profesi');
-            $table->foreignId('ID_Alumni')->constrained('alumnis')->onDelete('cascade');
-            $table->foreignId('ID_Kategori')->constrained('kategori_profesis')->onDelete('cascade');
+            $table->id('detail_profesi_id');
+            $table->unsignedBigInteger('alumni_id');
+            $table->foreign('alumni_id')->references('alumni_id')->on('alumnis');
+            $table->unsignedBigInteger('kategori_id');
+            $table->foreign('kategori_id')->references('kategori_id')->on('kategori_profesis');
             $table->year('tahun_lulus');
             $table->date('tanggal_pertama_kerja');
             $table->integer('masa_tunggu');

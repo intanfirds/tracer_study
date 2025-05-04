@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('admins', function (Blueprint $table) {
-            $table->id('ID_Admin');
-            $table->foreignId('ID_Level')->constrained('levels')->onDelete('cascade');
+            $table->id('admin_id');
+            $table->unsignedBigInteger('level_id');
+            $table->foreign('level_id')->references('level_id')->on('levels');
             $table->string('password');
             $table->string('nama');
             $table->string('email')->unique();
             $table->timestamps();
-        });        
+        });
     }
 
     /**

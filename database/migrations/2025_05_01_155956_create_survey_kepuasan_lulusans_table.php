@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('survey_kepuasan_lulusans', function (Blueprint $table) {
-            $table->id('ID_Survey');
-            $table->foreignId('ID_Alumni')->constrained('alumnis')->onDelete('cascade');
-            $table->foreignId('ID_Instansi')->constrained('instansis')->onDelete('cascade');
+            $table->id('survey_id');
+            $table->unsignedBigInteger('alumni_id');
+            $table->foreign('alumni_id')->references('alumni_id')->on('alumnis');
+            $table->unsignedBigInteger('instansi_id');
+            $table->foreign('instansi_id')->references('instansi_id')->on('instansis');
             $table->date('tanggal');
             $table->string('kerja_sama_tim');
             $table->string('kemampuan_berbahasa_asing');
