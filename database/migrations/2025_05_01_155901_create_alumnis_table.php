@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreign('level_id')->references('level_id')->on('levels');
             $table->string('NIM')->unique();
             $table->string('password');
-            $table->string('program_studi');
+            $table->unsignedBigInteger('prodi_id');
+            $table->foreign('prodi_id')->references('prodi_id')->on('program_studis');
             $table->string('nama');
             $table->string('no_hp');
             $table->string('email')->unique();

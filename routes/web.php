@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AlumniController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WelcomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,11 +16,22 @@ use App\Http\Controllers\WelcomeController;
 |
 */
 
-Route::get('/', [WelcomeController::class, 'index'])->name('home');
-Route::get('/profile', [WelcomeController::class, 'profile'])->name('profile');
-Route::get('/page', [WelcomeController::class, 'page'])->name('page');
-Route::get('/virtual-reality', [WelcomeController::class, 'virtualReality'])->name('virtual-reality');
-Route::get('/rtl', [WelcomeController::class, 'rtl'])->name('rtl');
-Route::get('/profile-static', [WelcomeController::class, 'profileStatic'])->name('profile-static');
-Route::get('/sign-in-static', [WelcomeController::class, 'signInStatic'])->name('sign-in-static');
-Route::get('/sign-up-static', [WelcomeController::class, 'signUpStatic'])->name('sign-up-static');
+Route::get('/loginPage', [AuthController::class, 'loginPage'])->name('loginPage'); //button masuk ke halaman login
+Route::post('/login', [AuthController::class, 'login'])->name('login'); //proses login
+
+Route::middleware(['ceklevel:Admin'])->group(function () {
+    Route::get('/admin/index', [AdminController::class, 'index']);
+    Route::get('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout'); //proses logout
+    Route::get('/admin/daftarAlumni', [AdminController::class, 'daftarAlumni'])->name('admin.daftarAlumni'); //menampilkan daftar alumni
+    Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan'); //menampilkan laporan
+});
+
+Route::middleware(['ceklevel:Alumni'])->group(function () {
+    Route::get('/alumni/index', [AlumniController::class, 'index']);
+    Route::get('/alumni/logout', [AuthController::class, 'logout'])->name('alumni.logout'); //proses logout
+    Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form'); //menampilkan form
+    Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile'); //menampilkan profile
+});
+
+
+

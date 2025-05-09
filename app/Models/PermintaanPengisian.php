@@ -9,6 +9,7 @@ class PermintaanPengisian extends Model
 {
     use HasFactory;
 
+    protected $table = 'permintaan_pengisians';
     protected $primaryKey = 'permintaan_id';
 
     protected $fillable = [

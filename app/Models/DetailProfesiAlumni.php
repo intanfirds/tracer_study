@@ -9,6 +9,7 @@ class DetailProfesiAlumni extends Model
 {
     use HasFactory;
 
+    protected $table = 'detail_profesi_alumnis';
     protected $primaryKey = 'detail_profesi_id';
 
     protected $fillable = [

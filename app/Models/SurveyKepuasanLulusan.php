@@ -9,6 +9,7 @@ class SurveyKepuasanLulusan extends Model
 {
     use HasFactory;
 
+    protected $table = 'survey_kepuasan_lulusans';
     protected $primaryKey = 'survey_id';
 
     protected $fillable = [
