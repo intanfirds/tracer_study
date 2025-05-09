@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/', function () {
+    return view('welcome');
+});
 Route::get('/loginPage', [AuthController::class, 'loginPage'])->name('loginPage'); //button masuk ke halaman login
 Route::post('/login', [AuthController::class, 'login'])->name('login'); //proses login
 

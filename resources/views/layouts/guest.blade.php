@@ -30,7 +30,7 @@
                 </div>
 
                 <!-- Tombol Login -->
-                <a href="/login" class="btn btn-light btn-secondary mt-1">
+                <a href="{{ url('/loginPage') }}" class="btn btn-light btn-secondary mt-1">
                     Login
                 </a>
             </div>

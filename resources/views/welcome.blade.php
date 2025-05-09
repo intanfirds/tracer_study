@@ -16,7 +16,7 @@
             meningkatkan kualitas pembelajaran dan relevansi kurikulum dengan dunia kerja.
         </p>
         {{-- <a href="" class="btn bg-dark btn-secondary ms-2 mt-4">Isi Kuesioner</a> --}}
-        <a href="/login" class="btn bg-dark btn-secondary ms-2 mt-4">
+        <a href="{{ url('/loginPage') }}" class="btn bg-dark btn-secondary ms-2 mt-4">
             <i class="fa fa-sign-in-alt me-1"></i> Login
         </a>
 
