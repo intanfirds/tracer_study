@@ -25,8 +25,13 @@ Route::post('/login', [AuthController::class, 'login'])->name('login'); //proses
 Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/index', [AdminController::class, 'index']);
     Route::get('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout'); //proses logout
-    Route::get('/admin/daftarAlumni', [AdminController::class, 'daftarAlumni'])->name('admin.daftarAlumni'); //menampilkan daftar alumni
+    Route::get('/admin/daftarAlumni', [AdminController::class, 'halamanDaftarAlumni']);
+    Route::post('/admin/daftarAlumni/list', [AdminController::class, 'daftarAlumni']); //menampilkan daftar alumni
     Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan'); //menampilkan laporan
+    Route::get('/admin/export_excel', [AlumniController::class, 'export_excel']);
+    Route::get('/admin/import', [AlumniController::class, 'showImportForm'])->name('admin.import.form');
+    Route::post('/admin/import', [AlumniController::class, 'import'])->name('admin.import');
+    Route::get('/admin/laporan', [AdminController::class, 'laporan']);
 });
 
 Route::middleware(['ceklevel:Alumni'])->group(function () {
