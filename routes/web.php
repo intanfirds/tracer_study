@@ -36,7 +36,7 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
 });
 
 Route::middleware(['ceklevel:Alumni'])->group(function () {
-    Route::get('/alumni', [AlumniController::class, 'index']);
+    Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
     Route::get('/alumni/logout', [AuthController::class, 'logout'])->name('alumni.logout'); //proses logout
     Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
     Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
