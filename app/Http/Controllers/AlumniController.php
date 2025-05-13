@@ -30,7 +30,7 @@ class AlumniController extends Controller
     public function form()
     {
         $alumni = \App\Models\Alumni::find(session('id'));
-        dd($alumni);
+        // dd($alumni);
 
         if (!$alumni) {
             return redirect('login')->with('error', 'Silakan login terlebih dahulu.');
@@ -58,9 +58,8 @@ class AlumniController extends Controller
             'jenis_instansi' => 'required|string',
             'nama_instansi' => 'required|string',
             'skala' => 'required|string',
-            'lokasi_instansi' => 'required|string',
-            'kategori_id' => 'required|exists:kategori_profesis,id',
-            'profesi_id' => 'required|exists:profesis,id',
+            'kategori_id' => 'required|exists:kategori_profesis,kategori_id',
+            'profesi' => 'required|string',
             'nama_atasan' => 'required|string',
             'jabatan' => 'required|string',
             'no_hp_atasan' => 'required|numeric|digits_between:10,15',
@@ -94,7 +93,6 @@ class AlumniController extends Controller
                 'nama_instansi' => $request->nama_instansi,
                 'jenis' => $request->jenis_instansi,
                 'skala' => $request->skala,
-                'lokasi' => $request->lokasi_instansi,
                 'nama_atasan' => $request->nama_atasan,
                 'jabatan' => $request->jabatan,
                 'no_hp_atasan' => $request->no_hp_atasan,
@@ -111,7 +109,7 @@ class AlumniController extends Controller
             DetailProfesiAlumni::create([
                 'alumni_id' => $alumni->alumni_id,
                 'kategori_id' => $request->kategori_id,
-                'profesi_id' => $request->profesi_id,
+                'profesi' => $request->profesi,
                 'masa_tunggu' => $masa_tunggu,
                 'status_pengisian' => 'Sudah Diisi',
                 'tanggal_pertama_kerja' => $request->tanggal_pertama_kerja,
@@ -142,9 +140,9 @@ class AlumniController extends Controller
 
         if ($validator->fails()) {
             return redirect()->back()
-                            ->withErrors($validator)
-                            ->withInput()
-                            ->with('error', 'Validasi gagal. Silakan cek kembali file yang Anda upload.');
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Validasi gagal. Silakan cek kembali file yang Anda upload.');
         }
 
         try {
@@ -187,82 +185,14 @@ class AlumniController extends Controller
         }
     }
 
-
-    // public function import()
-    // {
-    //     return view('admin.import');
-    // }
-    
-    // public function import_ajax(Request $request)
-    // {
-    //     if($request->ajax() || $request->wantsJson()){
-    //         $rules = [
-    //             // validasi file harus xls atau xlsx, max 1MB
-    //             'file_alumni' => ['required', 'mimes:xlsx', 'max:1024']
-    //         ];
-
-    //         $validator = Validator::make($request->all(), $rules);
-    //         if($validator->fails()){
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Validasi Gagal',
-    //                 'msgField' => $validator->errors()
-    //             ]);
-    //         }
-
-    //         $file = $request->file('file_alumni');  // ambil file dari request
-
-    //         $reader = IOFactory::createReader('Xlsx');  // load reader file excel
-    //         $reader->setReadDataOnly(true);             // hanya membaca data
-    //         $spreadsheet = $reader->load($file->getRealPath()); // load file excel
-    //         $sheet = $spreadsheet->getActiveSheet();    // ambil sheet yang aktif
-
-    //         $data = $sheet->toArray(null, false, true, true);   // ambil data excel
-
-    //         $insert = [];
-    //         if(count($data) > 1){ // jika data lebih dari 1 baris
-    //             foreach ($data as $baris => $value) {
-    //                 if($baris > 1){ // baris ke 1 adalah header, maka lewati
-    //                     $insert[] = [
-    //                         'level_id' => $value['A'],
-    //                         'NIM' => $value['B'],
-    //                         'password' => $value['C'],
-    //                         'prodi_id' => $value['D'],
-    //                         'nama' => $value['E'],
-    //                         'no_hp' => $value['F'],
-    //                         'email' => $value['G'],
-    //                         'created_at' => now(),
-    //                     ];
-    //                 }
-    //             }
-
-    //             if(count($insert) > 0){
-    //                 // insert data ke database, jika data sudah ada, maka diabaikan
-    //                 Alumni::insertOrIgnore($insert);   
-    //             }
-
-    //             return response()->json([
-    //                 'status' => true,
-    //                 'message' => 'Data berhasil diimport'
-    //             ]);
-    //         }else{
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Tidak ada data yang diimport'
-    //             ]);
-    //         }
-    //     }
-    //     return redirect('/');
-    // }
-
     public function export_excel()
     {
         $barang = Alumni::select('level_id', 'NIM', 'password', 'prodi_id', 'nama', 'no_hp', 'email')
-                    ->orderBy('nama')
-                    ->with('level')
-                    ->with('prodi')
-                    ->get();
-        
+            ->orderBy('nama')
+            ->with('level')
+            ->with('prodi')
+            ->get();
+
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -279,36 +209,35 @@ class AlumniController extends Controller
         $no = 1;
         $baris = 2;
         foreach ($barang as $key => $value) {
-            $sheet->setCellValue('A' .$baris, $no);
-            $sheet->setCellValue('B' .$baris, $value->NIM);
-            $sheet->setCellValue('C' .$baris, $value->nama);
-            $sheet->setCellValue('D' .$baris, $value->prodi->nama_prodi);
-            $sheet->setCellValue('E' .$baris, $value->no_hp);
-            $sheet->setCellValue('F' .$baris, $value->email);
+            $sheet->setCellValue('A' . $baris, $no);
+            $sheet->setCellValue('B' . $baris, $value->NIM);
+            $sheet->setCellValue('C' . $baris, $value->nama);
+            $sheet->setCellValue('D' . $baris, $value->prodi->nama_prodi);
+            $sheet->setCellValue('E' . $baris, $value->no_hp);
+            $sheet->setCellValue('F' . $baris, $value->email);
             $baris++;
             $no++;
         }
 
-        foreach(range('A','F') as $columnID) {
+        foreach (range('A', 'F') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
         $sheet->setTitle('Data Alumni');
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $filename = 'Data User' .date('Y-m-d H:i:s').'.xlsx';
+        $filename = 'Data User' . date('Y-m-d H:i:s') . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$filename.'"');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
         header('Cache-Control: max-age=1');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        header('Last-Modified: ' .gmdate('D, d M Y H:i:s'). ' GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
         header('Cache-Control: cache, must-revalidate');
         header('Pragma: public');
 
         $writer->save('php://output');
         exit;
     }
-
 }
