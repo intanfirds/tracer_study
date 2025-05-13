@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo as RelationsBelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Alumni extends Authenticatable
@@ -27,10 +28,25 @@ class Alumni extends Authenticatable
         return $this->hasOne(\App\Models\DetailProfesiAlumni::class, 'alumni_id', 'alumni_id');
     }
 
-    public function prodi()
+    public $timestamps = true;
+
+    public function level(): RelationsBelongsTo
     {
-        return $this->belongsTo(\App\Models\ProgramStudi::class, 'prodi_id', 'prodi_id');
+        return $this->belongsTo(Level::class, 'level_id', 'level_id');
     }
 
-    public $timestamps = true;
+    public function getRoleName(): string
+    {
+        return $this->level->nama;
+    }
+
+    public function prodi(): RelationsBelongsTo
+    {
+        return $this->belongsTo(ProgramStudi::class, 'prodi_id', 'prodi_id');
+    }
+
+    public function getProdiName(): string
+    {
+        return $this->prodi->nama_prodi;
+    }
 }

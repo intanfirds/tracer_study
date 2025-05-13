@@ -5,6 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
   <title>Tracer Study Polinema</title>
+
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <!--     Fonts and icons     -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet"/>
   <!-- Nucleo Icons -->
@@ -15,6 +17,8 @@
   <!-- CSS Files -->
   <link id="pagestyle" href="{{ asset('assets/css/argon-dashboard.css?v=2.1.0') }}" rel="stylesheet"/>
 </head>
+
+@stack('css')
 
 <body class="g-sidenav-show bg-light">
   <div class="min-height-300 bg-dark position-absolute w-100"></div>
@@ -150,4 +154,14 @@
 <script async defer src="https://buttons.github.io/buttons.js"></script>
 <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
 <script src="{{ asset('assets/js/argon-dashboard.min.js') }}"></script>
+
+<script>
+    // Untuk mengirimkan token Laravel CSRF pada setiap request ajax
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+</script>
+@stack('js')
 </html>
