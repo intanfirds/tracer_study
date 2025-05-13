@@ -12,16 +12,17 @@ class DetailProfesiAlumni extends Model
     protected $table = 'detail_profesi_alumnis';
     protected $primaryKey = 'detail_profesi_id';
 
-    protected $fillable = [
-        'alumni_id',
-        'kategori_id',
-        'tahun_lulus',
-        'tanggal_pertama_kerja',
-        'masa_tunggu',
-        'tanggal_mulai_kerja_instansi_saat_ini',
-        'tanggal_pengisian',
-        'status_pengisian',
-    ];
+    // protected $fillable = [
+    //     'alumni_id',
+    //     'kategori_id',
+    //     'tahun_lulus',
+    //     'tanggal_pertama_kerja',
+    //     'masa_tunggu',
+    //     'tanggal_mulai_kerja_instansi_saat_ini',
+    //     'tanggal_pengisian',
+    //     'status_pengisian',
+    // ];
+    protected $guarded=[];
 
     public $timestamps = true;
 }

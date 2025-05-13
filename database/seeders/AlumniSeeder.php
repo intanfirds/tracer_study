@@ -15,33 +15,39 @@ class AlumniSeeder extends Seeder
     public function run(): void
     {
         Alumni::insert([
-            /*[
+            [
+                'alumni_id' => 1,
                 'level_id' => 2,
-                'nama' => 'Putri',
+                'nama' => 'Kayla',
                 'NIM' => '2341760103',
-                'password' => Hash::make('alumni123'),
+                'tahun_lulus' => '2022',
+                'password' => Hash::make('123456'),
                 'prodi_id' => 1,
-                'no_hp' => '085711112222',
-                'email' => 'putri@gmail.com',
+                'no_hp' => null,
+                'email' => null,
             ],
             [
-                'level_id' => 2,
-                'nama' => 'Putra',
-                'NIM' => '2341760104',
-                'password' => Hash::make('alumni456'),
-                'prodi_id' => 2,
-                'no_hp' => '085733334444',
-                'email' => 'putra@gmail.com',
-            ],*/
-            [
+                'alumni_id' => 2,
                 'level_id' => 2,
                 'nama' => 'Intan Firdausi',
                 'NIM' => '2341760185',
-                'password' => Hash::make('12345'),
+                'tahun_lulus' => '2020',
+                'password' => Hash::make('123456'),
                 'prodi_id' => 2,
-                'no_hp' => '085755556666',
-                'email' => 'intanfir27@gmail.com',
+                'no_hp' => null,
+                'email' => null,
             ],
+            [
+                'alumni_id' => 3,
+                'level_id' => 2,
+                'nama' => 'Kaka',
+                'NIM' => '2341760005',
+                'tahun_lulus' => '2019',
+                'password' => Hash::make('123456'),
+                'prodi_id' => 1,
+                'no_hp' => null,
+                'email' => null,
+            ]
         ]);
     }
 }

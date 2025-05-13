@@ -22,5 +22,15 @@ class Alumni extends Authenticatable
         'email',
     ];
 
+    public function detailProfesi()
+    {
+        return $this->hasOne(\App\Models\DetailProfesiAlumni::class, 'alumni_id', 'alumni_id');
+    }
+
+    public function prodi()
+    {
+        return $this->belongsTo(\App\Models\ProgramStudi::class, 'prodi_id', 'prodi_id');
+    }
+
     public $timestamps = true;
 }

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreign('alumni_id')->references('alumni_id')->on('alumnis');
             $table->unsignedBigInteger('kategori_id');
             $table->foreign('kategori_id')->references('kategori_id')->on('kategori_profesis');
-            $table->year('tahun_lulus');
             $table->date('tanggal_pertama_kerja');
             $table->integer('masa_tunggu');
             $table->date('tanggal_mulai_kerja_instansi_saat_ini');

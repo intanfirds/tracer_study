@@ -15,19 +15,29 @@ class KategoriProfesiSeeder extends Seeder
     {
         KategoriProfesi::insert([
             [
-                'kode_kategori' => 'KP001',
-                'nama' => 'Software Engineer',
-                'keterangan' => 'Pengembang perangkat lunak.'
+                'kode_kategori' => 'IT',
+                'nama' => 'Bidang Infokom',
+                'keterangan' => 'Profesi yang bergerak di bidang teknologi informasi dan komunikasi.',
             ],
             [
-                'kode_kategori' => 'KP002',
-                'nama' => 'Trainer / Guru / Dosen (IT)',
-                'keterangan' => 'Mengajar dan melatih dalam bidang teknologi informasi.'
+                'kode_kategori' => 'NON-IT',
+                'nama' => 'Bidang Non-Infokom',
+                'keterangan' => 'Profesi yang tidak terkait langsung dengan bidang teknologi informasi dan komunikasi.',
             ],
             [
-                'kode_kategori' => 'KP003',
-                'nama' => 'Data Analyst',
-                'keterangan' => 'Analisis data dan pelaporan.'
+                'kode_kategori' => 'BELUM',
+                'nama' => 'Belum Bekerja',
+                'keterangan' => 'Individu yang saat ini belum memiliki pekerjaan.',
+            ],
+            [
+                'kode_kategori' => 'PEND-IT',
+                'nama' => 'Pendidikan Infokom',
+                'keterangan' => 'Sedang melanjutkan pendidikan di bidang teknologi informasi dan komunikasi.',
+            ],
+            [
+                'kode_kategori' => 'PEND-NON-IT',
+                'nama' => 'Pendidikan Non-Infokom',
+                'keterangan' => 'Sedang melanjutkan pendidikan di luar bidang teknologi informasi dan komunikasi.',
             ],
         ]);
     }

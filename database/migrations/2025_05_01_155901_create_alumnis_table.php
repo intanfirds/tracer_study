@@ -20,8 +20,9 @@ return new class extends Migration
             $table->unsignedBigInteger('prodi_id');
             $table->foreign('prodi_id')->references('prodi_id')->on('program_studis');
             $table->string('nama');
-            $table->string('no_hp');
-            $table->string('email')->unique();
+            $table->string('no_hp')->nullable();
+            $table->string('email')->unique()->nullable();
+            $table->year('tahun_lulus');
             $table->timestamps();
         });
     }

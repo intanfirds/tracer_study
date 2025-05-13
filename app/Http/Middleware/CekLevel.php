@@ -10,7 +10,8 @@ class CekLevel
 {
     public function handle(Request $request, Closure $next, $level)
     {
-        if (Session::get('level') != $level) {
+        // Pastikan user sudah login dan level-nya sesuai
+        if (!Session::has('id') || Session::get('level') !== $level) {
             return redirect('/login')->with('error', 'Akses ditolak!');
         }
 

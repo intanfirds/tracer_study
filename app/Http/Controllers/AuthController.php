@@ -30,7 +30,7 @@ class AuthController extends Controller
             Session::put('level', 'Admin');
             Session::put('nama', $admin->nama);
 
-            return view('admin.index');
+            return redirect('/admin');
         }
 
         // Cek ke tabel Alumni (berdasarkan nim)
@@ -40,7 +40,7 @@ class AuthController extends Controller
             Session::put('level', 'Alumni');
             Session::put('nama', $alumni->nama);
 
-            return view('alumni.index');
+            return redirect('/alumni');
         }
 
         // Kalau gagal semua
