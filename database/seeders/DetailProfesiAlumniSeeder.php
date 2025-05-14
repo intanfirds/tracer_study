@@ -18,7 +18,6 @@ class DetailProfesiAlumniSeeder extends Seeder
             [
                 'alumni_id' => 1,
                 'kategori_id' => 1,
-                'tahun_lulus' => 2022,
                 'tanggal_pertama_kerja' => Carbon::parse('2022-07-01'),
                 'masa_tunggu' => 3,
                 'tanggal_mulai_kerja_instansi_saat_ini' => Carbon::parse('2022-10-01'),
@@ -29,7 +28,6 @@ class DetailProfesiAlumniSeeder extends Seeder
             [
                 'alumni_id' => 2,
                 'kategori_id' => 2,
-                'tahun_lulus' => 2021,
                 'tanggal_pertama_kerja' => Carbon::parse('2021-08-15'),
                 'masa_tunggu' => 2,
                 'tanggal_mulai_kerja_instansi_saat_ini' => Carbon::parse('2021-09-01'),

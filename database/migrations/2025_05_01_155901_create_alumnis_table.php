@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->string('email')->unique()->nullable();
             $table->year('tahun_lulus');
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }

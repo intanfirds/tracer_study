@@ -25,6 +25,7 @@ class AlumniSeeder extends Seeder
                 'prodi_id' => 1,
                 'no_hp' => null,
                 'email' => null,
+                'foto' => null,
             ],
             [
                 'alumni_id' => 2,
@@ -36,6 +37,7 @@ class AlumniSeeder extends Seeder
                 'prodi_id' => 2,
                 'no_hp' => null,
                 'email' => null,
+                'foto' => null,
             ],
             [
                 'alumni_id' => 3,
@@ -47,6 +49,7 @@ class AlumniSeeder extends Seeder
                 'prodi_id' => 1,
                 'no_hp' => null,
                 'email' => null,
+                'foto' => null,
             ]
         ]);
     }

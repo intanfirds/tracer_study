@@ -19,7 +19,9 @@ return new class extends Migration
             $table->foreign('alumni_id')->references('alumni_id')->on('alumnis');
             $table->string('nama_instansi');
             $table->string('nama_atasan');
-            $table->string('jenis');
+            $table->unsignedBigInteger('jenis_instansi_id');
+            $table->foreign('jenis_instansi_id')->references('jenis_instansi_id')->on('jenis_instansis');
+            $table->string('lokasi_instansi');
             $table->string('jabatan');
             $table->string('skala');
             $table->string('email_atasan');

@@ -20,6 +20,12 @@ class ProgramStudiSeeder extends Seeder
             [
                 'nama_prodi' => 'D-IV Sistem Informasi Bisnis',
             ],
+            [
+                'nama_prodi' => 'D-II Peranti Perangkat Lunak Situs',
+            ],
+            [
+                'nama_prodi' => 'S-2 MRTI',
+            ]
         ]);
     }
 }

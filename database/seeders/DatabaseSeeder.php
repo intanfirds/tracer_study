@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             LevelSeeder::class,
             AlumniSeeder::class,
             AdminSeeder::class,
+            JenisInstansiTableSeeder::class,
             InstansiSeeder::class,
             KategoriProfesiSeeder::class,
             PermintaanPengisianSeeder::class,

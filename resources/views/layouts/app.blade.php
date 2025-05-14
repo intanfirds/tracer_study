@@ -16,6 +16,8 @@
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <!-- CSS Files -->
   <link id="pagestyle" href="{{ asset('assets/css/argon-dashboard.css?v=2.1.0') }}" rel="stylesheet"/>
+  <!-- Chart JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 @stack('css')
@@ -27,26 +29,32 @@
   <main class="main-content position-relative border-radius-lg">
     @include('layouts/partials.navbar')
     
-    <!-- Konten Utama -->
     <div class="container-fluid py-4">
+
+      {{-- Breadcrumb dengan margin top kecil biar naik --}}
+      <div class="mb-3" style="margin-top: -75px;">
+        @include('layouts/partials.breadcrumb')
+      </div>
+
       <div class="row">
         <div class="col-12">
           @yield('content')
         </div>
       </div>
     </div>
-    
-    <!-- Footer dipindah ke luar container utama -->
+
     @include('layouts/partials.footer')
   </main>
+  @stack('scripts')
 </body>
+
+
 
 <!--   Core JS Files   -->
 <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
 <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
-<script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
 <script>
   var ctx1 = document.getElementById("chart-line").getContext("2d");
 

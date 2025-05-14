@@ -9,7 +9,7 @@
   <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link {{ Request::is('index') ? 'active' : '' }}" href="{{ url('alumni/index') }}">
+        <a class="nav-link {{ Request::is('index') ? 'active' : '' }}" href="{{ url('/alumni') }}">
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-tv-2 text-sm opacity-10 {{ Request::is('index') ? 'text-white' : 'text-dark' }}"></i>
           </div>
@@ -38,7 +38,7 @@
   <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link {{ Request::is('admin/index') ? 'active' : '' }}" href="{{ url('/admin/index') }}">
+        <a class="nav-link {{ Request::is('admin/index') ? 'active' : '' }}" href="{{ url('/admin') }}">
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-tv-2 text-sm opacity-10 {{ Request::is('admin/index') ? 'text-white' : 'text-dark' }}"></i>
           </div>
