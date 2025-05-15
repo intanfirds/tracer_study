@@ -40,9 +40,5 @@ Route::middleware(['ceklevel:Alumni'])->group(function () {
     Route::get('/alumni/logout', [AuthController::class, 'logout'])->name('alumni.logout'); //proses logout
     Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
     Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
-    Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile'); //menampilkan profile
-});
-
-Route::get('/cek-session', function () {
-    return response()->json(Session::all());
+    Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile');
 });

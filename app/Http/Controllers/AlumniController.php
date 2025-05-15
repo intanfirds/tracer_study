@@ -118,11 +118,19 @@ class AlumniController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('alumni.index')->with('success', 'Data berhasil disimpan!');
+            return redirect()->route('alumni.profile')->with('success', 'Data berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
+    }
+
+    public function profile()
+    {
+        // dd(session()->all());
+        $id = session('id'); // Atau bisa juga pakai Auth::user()->id kalau login pakai auth
+        $alumni = Alumni::findOrFail($id);
+        return view('alumni.profile', compact('alumni'));
     }
 
     public function showImportForm()
