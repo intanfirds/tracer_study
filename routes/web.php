@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SurveyKepuasanController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 /*
@@ -23,6 +24,7 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
+
 Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
     Route::get('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout'); //proses logout
@@ -41,6 +43,9 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/daftarAlumni', [AdminController::class, 'halamanDaftarAlumni'])->name('admin.daftarAlumni');
     
 });
+
+Route::get('/survey', [SurveyKepuasanController::class, 'create'])->name('survey.create');
+Route::post('/survey', [SurveyKepuasanController::class, 'store'])->name('survey.store');
 
 Route::middleware(['ceklevel:Alumni'])->group(function () {
     Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
