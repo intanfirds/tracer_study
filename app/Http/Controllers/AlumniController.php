@@ -248,4 +248,10 @@ class AlumniController extends Controller
         $writer->save('php://output');
         exit;
     }
+    public function daftarAlumni()
+    {
+        $alumnis = Alumni::with(['prodi', 'detailProfesi'])->get();
+
+        return view('admin.daftarAlumni', compact('alumnis'));
+    }
 }

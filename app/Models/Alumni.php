@@ -25,7 +25,7 @@ class Alumni extends Authenticatable
 
     public function detailProfesi()
     {
-        return $this->hasOne(\App\Models\DetailProfesiAlumni::class, 'alumni_id', 'alumni_id');
+        return $this->hasOne(DetailProfesiAlumni::class, 'alumni_id', 'alumni_id');
     }
 
     public $timestamps = true;

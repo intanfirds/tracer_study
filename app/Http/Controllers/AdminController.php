@@ -9,6 +9,8 @@ use App\Models\Instansi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
+use App\Models\DetailProfesiAlumni;
+use App\Models\KategoriProfesi;
 
 class AdminController extends Controller
 {
@@ -141,6 +143,67 @@ class AdminController extends Controller
             'alumni' => $alumni,
             'prodi' => $prodi
         ]);
+        
+        
     }
+
+    public function show($id)
+{
+    $alumni = Alumni::with(['prodi', 'level', 'detailProfesi'])->findOrFail($id);
+    return view('admin.show', compact('alumni'));
+}
+
+public function edit($id)
+{
+    $alumni = Alumni::with('prodi', 'detailProfesi')->findOrFail($id);
+    $prodis = ProgramStudi::all();
+    $kategoris = KategoriProfesi::all();
+    return view('admin.edit', compact('alumni', 'prodis', 'kategoris'));
+}
+public function destroy($id)
+{
+    Alumni::destroy($id);
+
+    $alumni = Alumni::with(['level', 'prodi'])->get();
+    $prodi = ProgramStudi::all();
+
+    return view('admin.daftarAlumni', [
+        'page' => (object)['title' => 'Daftar Alumni'],
+        'alumni' => $alumni,
+        'prodi' => $prodi,
+        'success' => 'Data alumni berhasil dihapus.'
+    ]);
+}
+
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'nama' => 'required|string',
+        'no_hp' => 'required|string',
+        'email' => 'required|email',
+        'prodi_id' => 'required|exists:program_studis,prodi_id',
+    ]);
+
+    $alumni = Alumni::findOrFail($id);
+    $alumni->update([
+        'nama' => $request->nama,
+        'no_hp' => $request->no_hp,
+        'email' => $request->email,
+        'prodi_id' => $request->prodi_id,
+    ]);
+
+    if ($alumni->detailProfesi) {
+        $alumni->detailProfesi->update([
+            'profesi' => $request->profesi ?? '',
+        ]);
+    }
+
+    $allAlumni = Alumni::with(['level', 'prodi'])->get();
+    $allProdi = ProgramStudi::all();
+
+    return redirect()->route('admin.daftarAlumni')->with('success', 'Data alumni berhasil diperbarui.');
+
+}
+
 
 }

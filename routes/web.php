@@ -33,6 +33,13 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/import', [AlumniController::class, 'showImportForm'])->name('admin.import.form');
     Route::post('/admin/import', [AlumniController::class, 'import'])->name('admin.import');
     Route::get('/admin/laporan', [AdminController::class, 'laporan']);
+
+    Route::get('/admin/detail/{id}', [AdminController::class, 'show'])->name('admin.detail');
+    Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
+    Route::delete('/admin/delete/{id}', [AdminController::class, 'destroy'])->name('admin.delete');
+    Route::put('/admin/{id}', [AdminController::class, 'update'])->name('admin.update');
+    Route::get('/admin/daftarAlumni', [AdminController::class, 'halamanDaftarAlumni'])->name('admin.daftarAlumni');
+    
 });
 
 Route::middleware(['ceklevel:Alumni'])->group(function () {
@@ -42,3 +49,6 @@ Route::middleware(['ceklevel:Alumni'])->group(function () {
     Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
     Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile');
 });
+
+Route::resource('alumni', \App\Http\Controllers\AlumniController::class);
+
