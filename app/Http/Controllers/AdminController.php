@@ -9,7 +9,6 @@ use App\Models\Instansi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
-use App\Models\DetailProfesiAlumni;
 use App\Models\KategoriProfesi;
 
 class AdminController extends Controller
