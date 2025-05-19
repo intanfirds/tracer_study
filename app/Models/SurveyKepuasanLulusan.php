@@ -14,13 +14,13 @@ class SurveyKepuasanLulusan extends Model
 
     protected $fillable = [
         'alumni_id',
-        'instansi',
+        'instansi_id',
         'tanggal',
         'kerja_sama_tim',
-        'kemampuan_berbahasa',
+        'kemampuan_berbahasa_asing',
         'kemampuan_berkomunikasi',
         'etos_kerja',
-        'saran_untuk_kurikulum',
+        'saran_untuk_kurikulum_prodi',
         'kemampuan_tdk_terpenuhi',
         'status_pengisian',
     ];

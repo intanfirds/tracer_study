@@ -40,9 +40,6 @@
         <th>No</th>
         <th>NIM</th>
         <th>Nama</th>
-        <th>No HP</th>
-        <th>Email</th>
-        <th>Level</th>
         <th>Prodi</th>
         <th>Aksi</th> {{-- Tambahan --}}
     </tr>
@@ -53,9 +50,6 @@
             <td>{{ $index + 1 }}</td>
             <td>{{ $item->NIM }}</td>
             <td>{{ $item->nama }}</td>
-            <td>{{ $item->no_hp }}</td>
-            <td>{{ $item->email }}</td>
-            <td>{{ $item->level->nama }}</td>
             <td>{{ $item->prodi->nama_prodi }}</td>
             <td>
                 <a href="{{ url('/admin/detail', $item->alumni_id) }}" class="btn btn-sm btn-primary">
