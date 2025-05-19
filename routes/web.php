@@ -39,7 +39,7 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::delete('/admin/delete/{id}', [AdminController::class, 'destroy'])->name('admin.delete');
     Route::put('/admin/{id}', [AdminController::class, 'update'])->name('admin.update');
     Route::get('/admin/daftarAlumni', [AdminController::class, 'halamanDaftarAlumni'])->name('admin.daftarAlumni');
-    
+    Route::get('/admin/get-data', [AdminController::class, 'getData'])->name('admin.getData');
 });
 
 Route::middleware(['ceklevel:Alumni'])->group(function () {

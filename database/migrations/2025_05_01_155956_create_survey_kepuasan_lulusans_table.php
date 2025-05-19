@@ -18,9 +18,12 @@ return new class extends Migration
             $table->unsignedBigInteger('instansi_id');
             $table->foreign('instansi_id')->references('instansi_id')->on('instansis');
             $table->date('tanggal');
-            $table->string('kerja_sama_tim');
+            $table->string('kerjasama_tim');
+            $table->string('keahlian_bidang_it');
             $table->string('kemampuan_berbahasa_asing');
             $table->string('kemampuan_berkomunikasi');
+            $table->string('pengembangan_diri');
+            $table->string('kepemimpinan');
             $table->string('etos_kerja');
             $table->text('saran_untuk_kurikulum_prodi');
             $table->text('kemampuan_tdk_terpenuhi');
