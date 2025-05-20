@@ -6,6 +6,7 @@ use App\Models\Alumni;
 use App\Models\ProgramStudi;
 use App\Models\Instansi;
 use App\Models\DetailProfesiAlumni;
+use App\Models\JenisInstansi;
 use App\Models\KategoriProfesi;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -39,8 +40,9 @@ class AlumniController extends Controller
         $prodis = ProgramStudi::all();
         $detailProfesiAlumni = DetailProfesiAlumni::all();
         $kategoris = KategoriProfesi::all();
+        $jenis_instansis = JenisInstansi::all();
 
-        return view('alumni.form', compact('alumni', 'prodis', 'detailProfesiAlumni', 'kategoris'));
+        return view('alumni.form', compact('alumni', 'prodis', 'detailProfesiAlumni', 'kategoris', 'jenis_instansis'));
     }
 
     // Menyimpan data form
@@ -55,7 +57,8 @@ class AlumniController extends Controller
             'email' => 'required|email',
             'tanggal_pertama_kerja' => 'required|date|after_or_equal:' . $request->tahun_lulus . '-01-01',
             'tanggal_mulai_kerja' => 'required|date|after_or_equal:' . $request->tanggal_pertama_kerja,
-            'jenis_instansi' => 'required|string',
+            'jenis_instansi_id' => 'required|exists:jenis_instansis,jenis_instansi_id',
+            'lokasi_instansi' => 'required|string',
             'nama_instansi' => 'required|string',
             'skala' => 'required|string',
             'kategori_id' => 'required|exists:kategori_profesis,kategori_id',
@@ -91,7 +94,8 @@ class AlumniController extends Controller
             $instansi = Instansi::create([
                 'alumni_id' => $alumni->alumni_id,
                 'nama_instansi' => $request->nama_instansi,
-                'jenis' => $request->jenis_instansi,
+                'jenis_instansi_id' => $request->jenis_instansi_id,
+                'lokasi_instansi' => $request->lokasi_instansi,
                 'skala' => $request->skala,
                 'nama_atasan' => $request->nama_atasan,
                 'jabatan' => $request->jabatan,
