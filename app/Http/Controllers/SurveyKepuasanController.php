@@ -27,32 +27,24 @@ class SurveyKepuasanController extends Controller
             'alumni_id' => 'required|exists:alumnis,alumni_id',
             'instansi_id' => 'required|exists:instansis,instansi_id',
             'tanggal' => 'required|date',
-            'kerja_sama_tim' => 'required|in:1,2,3,4,5',
+            'kerjasama_tim' => 'required|in:1,2,3,4,5',
+            'keahlian_bidang_it' => 'required|in:1,2,3,4,5',
             'kemampuan_berbahasa_asing' => 'required|in:1,2,3,4,5',
             'kemampuan_berkomunikasi' => 'required|in:1,2,3,4,5',
+            'pengembangan_diri' => 'required|in:1,2,3,4,5',
+            'kepemimpinan' => 'required|in:1,2,3,4,5',
             'etos_kerja' => 'required|in:1,2,3,4,5',
             'saran_untuk_kurikulum_prodi' => 'nullable|string',
             'kemampuan_tdk_terpenuhi' => 'nullable|string',
             'status_pengisian' => 'required|string',
         ]);
 
-        // SurveyKepuasanLulusan::create([
-        //     'alumni_id' => $request->alumni_id,
-        //     'instansi_id' => $request->instansi_id,
-        //     'tanggal' => $request->date,
-        //     'kerja_sama_tim' => $request->kerja_sama_tim,
-        //     'kemampuan_berbahasa_asing' => $request->kemampuan_berbahasa_asing,
-        //     'kemampuan_berkomunikasi' => $request->kemampuan_berkomunikasi,
-        //     'etos_kerja' => $request->etos_kerja,
-        //     'saran_untuk_kurikulum_prodi' => $request->saran_untuk_kurikulum_prodi,
-        //     'kemampuan_tdk_terpenuhi' => $request->kemampuan_tdk_terpenuhi,
-        //     'status_pengisian' => $request->status_pengisian,
-        // ]);
-
         SurveyKepuasanLulusan::create($request->all());
 
         return redirect()->back()->with('success', 'Survey berhasil disimpan.');
     }
+
+
     public function export_survey()
     {
     /**********************
@@ -147,4 +139,18 @@ class SurveyKepuasanController extends Controller
     $writer->save('php://output');
     exit;
     }
+
+    public function getInstansi($alumni_id)
+    {
+        $alumni = Alumni::with('instansi')->where('alumni_id', $alumni_id)->first();
+
+        return response()->json([
+            'instansi_id' => $alumni->instansi->instansi_id ?? null,
+            'nama_instansi' => $alumni->instansi->nama_instansi ?? '',
+            'nama_atasan' => $alumni->instansi->nama_atasan ?? '',
+            'lokasi_instansi' => $alumni->instansi->lokasi_instansi ?? '',
+        ]);
+    }
+
+
 }

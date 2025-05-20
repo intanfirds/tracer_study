@@ -47,6 +47,8 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
 Route::get('/survey', [SurveyKepuasanController::class, 'create'])->name('survey.create');
 Route::post('/survey', [SurveyKepuasanController::class, 'store'])->name('survey.store');
 Route::get('/admin/export_survey', [SurveyKepuasanController::class, 'export_survey']);
+Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getInstansi']);
+
 
 
 
