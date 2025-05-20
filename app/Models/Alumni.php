@@ -49,4 +49,9 @@ class Alumni extends Authenticatable
     {
         return $this->prodi->nama_prodi;
     }
+    public function instansi()
+    {
+    return $this->hasOne(Instansi::class, 'alumni_id', 'alumni_id');
+    }
+
 }

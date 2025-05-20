@@ -368,7 +368,7 @@ class AdminController extends Controller
 
     public function show($id)
 {
-    $alumni = Alumni::with(['prodi', 'level', 'detailProfesi'])->findOrFail($id);
+    $alumni = Alumni::with(['prodi', 'level', 'detailProfesi', 'instansi'])->findOrFail($id);
     return view('admin.show', compact('alumni'));
 }
 
