@@ -1,6 +1,6 @@
 <div class="d-flex flex-column">
     <div>
-        @foreach (session('breadcrumb') as $key => $item)
+        @foreach (session('breadcrumb') ?? [] as $key => $item)
             @if ($item['url'])
                 <a class="opacity-5 text-white text-sm" href="{{ $item['url'] }}">{{ $item['label'] }} / </a>
             @endif

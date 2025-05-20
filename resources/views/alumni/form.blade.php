@@ -18,7 +18,7 @@
 
         <div class="card shadow-sm border-0">
             <div class="card-body" style="max-height: calc(100vh - 200px); overflow-y: auto;">
-                <form action="{{ route('alumni.store') }}" method="POST">
+                <form id="alumni-form" action="{{ route('alumni.store') }}" method="POST">
                     @csrf
                     <h3 class="mb-4">Formulir Pengisian Data Lulusan</h3>
 
@@ -118,11 +118,12 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label>Jenis Instansi</label>
-                            <select name="jenis_instansi" class="form-control" required>
-                                <option value="">-- Pilih Jenis --</option>
-                                <option>Pemerintah</option>
-                                <option>Swasta</option>
-                                <option>BUMN</option>
+                            <select name="jenis_instansi_id" class="form-control" required>
+                                <option value="">-- Pilih Jenis Instansi --</option>
+                                @foreach ($jenis_instansis as $jenis_instansi)
+                                    <option value="{{ $jenis_instansi->jenis_instansi_id }}">
+                                        {{ $jenis_instansi->nama_jenis_instansi }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -142,8 +143,11 @@
                                 <option>Internasional</option>
                             </select>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Lokasi Instansi</label>
+                            <input type="text" name="lokasi_instansi" class="form-control" required>
+                        </div>
                     </div>
-
 
                     <hr>
                     <h5>Data Atasan Langsung</h5>
@@ -177,3 +181,44 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <!-- Load jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Load EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            emailjs.init("fHVyExSnS3Edg1P2l");
+
+            $('#alumni-form').on('submit', function(e) {
+                e.preventDefault();
+
+                const form = this;
+                const formData = new FormData(form);
+
+                const emailParams = {
+                    to_email: formData.get('email_atasan'),
+                    to_name: formData.get('nama_atasan'),
+                    alumni_name: formData.get('nama'),
+                    alumni_nim: formData.get('nim'),
+                    alumni_prodi: $('#alumni-form input[name="prodi_id"]')
+                .val(), // jika prodi dalam hidden input
+                    survey_link: '{{ url('/') }}'
+                };
+
+
+                emailjs.send('service_n8pyris', 'template_el4150l', emailParams)
+                    .then(function() {
+                        console.log("Email terkirim. Mengirim data ke server...");
+                        form.submit();
+                    }, function(error) {
+                        console.error("Gagal kirim email:", error);
+                        alert("Gagal mengirim email ke atasan. Tapi data tetap dikirim.");
+                        form.submit();
+                    });
+            });
+        });
+    </script>
+@endpush
