@@ -11,6 +11,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\Log;
 
 class SurveyKepuasanController extends Controller
 {
@@ -27,21 +28,49 @@ class SurveyKepuasanController extends Controller
             'alumni_id' => 'required|exists:alumnis,alumni_id',
             'instansi_id' => 'required|exists:instansis,instansi_id',
             'tanggal' => 'required|date',
-            'kerjasama_tim' => 'required|in:1,2,3,4,5',
-            'keahlian_bidang_it' => 'required|in:1,2,3,4,5',
-            'kemampuan_berbahasa_asing' => 'required|in:1,2,3,4,5',
-            'kemampuan_berkomunikasi' => 'required|in:1,2,3,4,5',
-            'pengembangan_diri' => 'required|in:1,2,3,4,5',
-            'kepemimpinan' => 'required|in:1,2,3,4,5',
-            'etos_kerja' => 'required|in:1,2,3,4,5',
+            'kerjasama_tim' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
+            'keahlian_bidang_it' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
+            'kemampuan_berbahasa_asing' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
+            'kemampuan_berkomunikasi' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
+            'pengembangan_diri' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
+            'kepemimpinan' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
+            'etos_kerja' => 'required|in:Kurang,Cukup,Baik,Sangat Baik',
             'saran_untuk_kurikulum_prodi' => 'nullable|string',
             'kemampuan_tdk_terpenuhi' => 'nullable|string',
             'status_pengisian' => 'required|string',
         ]);
 
-        SurveyKepuasanLulusan::create($request->all());
+        try {
+            $survey = SurveyKepuasanLulusan::updateOrCreate(
+                ['alumni_id' => $request->alumni_id], // find by alumni_id
+                [
+                    'instansi_id' => $request->instansi_id,
+                    'tanggal' => $request->tanggal,
+                    'kerjasama_tim' => $request->kerjasama_tim,
+                    'keahlian_bidang_it' => $request->keahlian_bidang_it,
+                    'kemampuan_berbahasa_asing' => $request->kemampuan_berbahasa_asing,
+                    'kemampuan_berkomunikasi' => $request->kemampuan_berkomunikasi,
+                    'pengembangan_diri' => $request->pengembangan_diri,
+                    'kepemimpinan' => $request->kepemimpinan,
+                    'etos_kerja' => $request->etos_kerja,
+                    'saran_untuk_kurikulum_prodi' => $request->saran_untuk_kurikulum_prodi,
+                    'kemampuan_tdk_terpenuhi' => $request->kemampuan_tdk_terpenuhi,
+                    'status_pengisian' => 'Selesai'
+                ]
+            );
 
-        return redirect()->back()->with('success', 'Survey berhasil disimpan.');
+            $message = $survey->wasRecentlyCreated 
+                ? 'Survey berhasil disimpan.' 
+                : 'Survey berhasil diperbarui.';
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Survey store error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menyimpan survey.')
+                ->withInput();
+        }
     }
 
 
