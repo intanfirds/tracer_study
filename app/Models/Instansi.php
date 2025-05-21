@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Instansi extends Model
 {
@@ -17,12 +18,18 @@ class Instansi extends Model
         'alumni_id',
         'nama_instansi',
         'nama_atasan',
-        'jenis',
+        'jenis_instansi_id',
+        'lokasi_instansi',
         'jabatan',
         'skala',
         'email_atasan',
         'no_hp_atasan',
     ];
+
+    public function alumni(): BelongsTo
+    {
+        return $this->belongsTo(Instansi::class, 'alumni_id', 'alumni_id');
+    }
 
     public $timestamps = true;
 
