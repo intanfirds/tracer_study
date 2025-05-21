@@ -25,4 +25,9 @@ class DetailProfesiAlumni extends Model
     protected $guarded=[];
 
     public $timestamps = true;
+
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class, 'alumni_id', 'alumni_id');
+    }
 }

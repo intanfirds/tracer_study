@@ -14,105 +14,81 @@ use App\Models\KategoriProfesi;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $prodiId = $request->prodi_id;
+        $tahunLulus = $request->tahun_lulus;
         session()->put('breadcrumb', [
             ['label' => 'Dashboard', 'url' => url('/admin/index')],
             ['label' => 'Dashboard', 'url' => null],
         ]);
-        
-        $prodi = ProgramStudi::all();
-        $alumni = Alumni::select('tahun_lulus')->distinct()->orderBy('tahun_lulus')->get();
-            
-        // Fetch initial table data
-        $tabel1 = $this->fetchTableData();
-            
-        // Fetch initial chart data
-        $charts1 = $this->fetchChartData();
-
-        // Fetch survey data (for table)
-        $surveyData = $this->fetchSurveyData();
-
-        // Fetch survey charts data (for pie charts)
-        $surveyCharts = $this->fetchSurveyDataChart();
-
-        return view('admin.index', array_merge(
-            compact('prodi', 'alumni', 'tabel1', 'charts1'),
-            [
-                // Data for survey table
-                'kepuasan' => $surveyData['detail'],
-                'total' => $surveyData['total'],
-                'totalResponden' => $surveyData['totalResponden'],
-                
-                // Data for survey pie charts
-                'surveyCharts' => $surveyCharts['charts'],
-            ]
-        ));
-    }
-
-    public function getTableData(Request $request)
-    {
         try {
-            // Validasi input filter
-            $filterProdi = $request->prodi ? intval($request->prodi) : null;
-            $filterTahun = $request->tahun ? intval($request->tahun) : null;
+            // Basic data fetch
+            $prodi = ProgramStudi::all();
+            $alumni = Alumni::select('tahun_lulus')
+                ->distinct()
+                ->orderBy('tahun_lulus')
+                ->get();
 
-            if ($filterProdi && !ProgramStudi::find($filterProdi)) {
-                return response()->json(['error' => 'Program Studi tidak valid'], 400);
+            // Fetch filtered data
+            $tabel1 = $this->fetchTableData($prodiId, $tahunLulus);
+            $charts1 = $this->fetchChartData($prodiId, $tahunLulus);
+            $surveyData = $this->fetchSurveyData($prodiId, $tahunLulus);
+            $surveyCharts = $this->fetchSurveyDataChart($prodiId, $tahunLulus);
+
+            if ($request->ajax()) {
+                try {
+                    $tableHtml = view('admin.tab_profesi', [
+                        'tabel1' => $tabel1,
+                        'prodi' => $prodi,
+                        'alumni' => $alumni
+                    ])->render();
+
+                    return response()->json([
+                        'status' => 'success',
+                        'tableHtml' => $tableHtml,
+                        'charts1' => $charts1,
+                        'surveyCharts' => $surveyCharts['charts']
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('AJAX render error: ' . $e->getMessage());
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Gagal memperbarui tampilan'
+                    ], 500);
+                }
             }
 
-            $tabel1 = $this->fetchTableData($filterProdi, $filterTahun);
-
-            return response()->json([
-                'status' => 'success',
+            // Regular view response
+            return view('admin.index', [
+                'prodi' => $prodi,
+                'alumni' => $alumni,
                 'tabel1' => $tabel1,
-                'html' => view('partials.profesi_table', [
-                    'tabel1' => $tabel1,
-                ])->render()
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Table Data Error:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return response()->json(['error' => 'Terjadi kesalahan saat memproses data tabel'], 500);
-        }
-    }
-
-    public function getChartData(Request $request)
-    {
-        try {
-            // Validasi input filter
-            $filterProdi = $request->prodi ? intval($request->prodi) : null;
-            $filterTahun = $request->tahun ? intval($request->tahun) : null;
-
-            if ($filterProdi && !ProgramStudi::find($filterProdi)) {
-                return response()->json(['error' => 'Program Studi tidak valid'], 400);
-            }
-
-            $charts1 = $this->fetchChartData($filterProdi, $filterTahun);
-
-            return response()->json([
-                'status' => 'success',
                 'charts1' => $charts1,
-                'html' => view('partials.profesi_charts', [
-                    'charts1' => $charts1,
-                ])->render()
+                'kepuasan' => $surveyData['detail'] ?? [],
+                'total' => $surveyData['total'] ?? [],
+                'totalResponden' => $surveyData['totalResponden'] ?? 0,
+                'surveyCharts' => $surveyCharts['charts'] ?? [],
+                'selectedProdi' => $prodiId,
+                'selectedTahun' => $tahunLulus,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Chart Data Error:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Dashboard Error: ' . $e->getMessage());
             
-            return response()->json(['error' => 'Terjadi kesalahan saat memproses data chart'], 500);
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan saat memuat data'
+                ], 500);
+            }
+            
+            return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
 
-    protected function fetchTableData($prodiId = null, $tahunLulus = null)
+    // Contoh fungsi fetch data tabel, sesuaikan dengan kebutuhan aslinya
+    protected function fetchTableData($prodiId, $tahunLulus)
     {
         $query = DB::table('alumnis')
             ->leftJoin('detail_profesi_alumnis', 'alumnis.alumni_id', '=', 'detail_profesi_alumnis.alumni_id')
@@ -142,37 +118,39 @@ class AdminController extends Controller
             ->get();
     }
 
-    protected function fetchChartData($prodiId = null, $tahunLulus = null)
+    protected function fetchChartData($prodiId, $tahunLulus)
     {
-        $charts = [];
+        // PROFESI
+        $profesiQuery = DB::table('detail_profesi_alumnis')
+            ->join('alumnis', 'detail_profesi_alumnis.alumni_id', '=', 'alumnis.alumni_id')
+            ->select('detail_profesi_alumnis.profesi', DB::raw('count(*) as total'))
+            ->groupBy('detail_profesi_alumnis.profesi');
 
-        // Chart 1: Profesi
-        $profesiQuery = DetailProfesiAlumni::query();
         if ($prodiId) {
-            $profesiQuery->whereHas('alumni', function($q) use ($prodiId) {
-                $q->where('prodi_id', $prodiId);
-            });
+            $profesiQuery->where('alumnis.prodi_id', $prodiId);
         }
         if ($tahunLulus) {
-            $profesiQuery->whereHas('alumni', function($q) use ($tahunLulus) {
-                $q->where('tahun_lulus', $tahunLulus);
-            });
+            $profesiQuery->where('alumnis.tahun_lulus', $tahunLulus);
         }
 
-        $profesi = $profesiQuery->select('profesi', DB::raw('count(*) as total'))
-                    ->groupBy('profesi')
-                    ->get();
+        $profesiData = $profesiQuery->get();
 
-        $charts[] = [
-            'title' => 'Sebaran Profesi Alumni',
-            'labels' => $profesi->pluck('profesi')->toArray(),
-            'data' => $profesi->pluck('total')->toArray()
+        
+        // Format data for first chart
+        $charts = [
+            [
+                'title' => 'Sebaran Jenis Profesi',
+                'labels' => $profesiData->pluck('profesi')->toArray(),
+                'data' => $profesiData->pluck('total')->toArray()
+            ]
         ];
 
-        // Chart 2: Instansi
-        $instansiQuery = DB::table('jenis_instansis')
-            ->leftJoin('instansis', 'jenis_instansis.jenis_instansi_id', '=', 'instansis.jenis_instansi_id')
-            ->leftJoin('alumnis', 'instansis.alumni_id', '=', 'alumnis.alumni_id');
+        // INSTANSI
+        $instansiQuery = DB::table('instansis')
+            ->join('jenis_instansis', 'instansis.jenis_instansi_id', '=', 'jenis_instansis.jenis_instansi_id')
+            ->join('alumnis', 'instansis.alumni_id', '=', 'alumnis.alumni_id')
+            ->select('jenis_instansis.nama_jenis_instansi', DB::raw('count(instansis.instansi_id) as total'))
+            ->groupBy('jenis_instansis.nama_jenis_instansi');
 
         if ($prodiId) {
             $instansiQuery->where('alumnis.prodi_id', $prodiId);
@@ -181,27 +159,36 @@ class AdminController extends Controller
             $instansiQuery->where('alumnis.tahun_lulus', $tahunLulus);
         }
 
-        $instansi = $instansiQuery
-            ->select('jenis_instansis.nama_jenis_instansi', DB::raw('COUNT(instansis.instansi_id) as total'))
-            ->groupBy('jenis_instansis.nama_jenis_instansi')
-            ->get();
 
+        $instansiData = $instansiQuery->get();
+
+        // Add second chart
         $charts[] = [
             'title' => 'Sebaran Jenis Instansi',
-            'labels' => $instansi->pluck('nama_jenis_instansi')->toArray(),
-            'data' => $instansi->pluck('total')->toArray()
+            'labels' => $instansiData->pluck('nama_jenis_instansi')->toArray(),
+            'data' => $instansiData->pluck('total')->toArray()
         ];
 
         return $charts;
     }
 
-    protected function fetchSurveyData()
+
+    // Fungsi ambil data survey kepuasan dengan filter prodi & tahun
+    protected function fetchSurveyData($prodiId, $tahunLulus)
     {
-        // Get all survey data
-        $surveys = DB::table('survey_kepuasan_lulusans')->get();
+        $query = DB::table('survey_kepuasan_lulusans')
+            ->join('alumnis', 'survey_kepuasan_lulusans.alumni_id', '=', 'alumnis.alumni_id');
+
+        if ($prodiId) {
+            $query->where('alumnis.prodi_id', $prodiId);
+        }
+        if ($tahunLulus) {
+            $query->where('alumnis.tahun_lulus', $tahunLulus);
+        }
+
+        $surveys = $query->get();
         $totalResponden = $surveys->count();
 
-        // If no data, return empty arrays
         if ($totalResponden === 0) {
             return [
                 'detail' => [],
@@ -210,10 +197,9 @@ class AdminController extends Controller
             ];
         }
 
-        // Categories to process
         $kategori = [
             'kerjasama_tim',
-            'keahlian_bidang_it', 
+            'keahlian_bidang_it',
             'kemampuan_berbahasa_asing',
             'kemampuan_berkomunikasi',
             'pengembangan_diri',
@@ -222,11 +208,10 @@ class AdminController extends Controller
         ];
 
         $detail = [];
-        
-        // Calculate percentages for each category
+
         foreach ($kategori as $k) {
             $count = $surveys->groupBy($k)->map->count();
-            
+
             $detail[$k] = [
                 'Sangat Baik' => round(($count['Sangat Baik'] ?? 0) / $totalResponden * 100, 1),
                 'Baik' => round(($count['Baik'] ?? 0) / $totalResponden * 100, 1),
@@ -235,7 +220,6 @@ class AdminController extends Controller
             ];
         }
 
-        // Calculate averages
         $total = [
             'Sangat Baik' => round(collect($detail)->pluck('Sangat Baik')->avg(), 1),
             'Baik' => round(collect($detail)->pluck('Baik')->avg(), 1),
@@ -250,10 +234,20 @@ class AdminController extends Controller
         ];
     }
 
-    protected function fetchSurveyDataChart()
+    // Fungsi ambil data survey untuk pie chart kepuasan
+    protected function fetchSurveyDataChart($prodiId,   $tahunLulus ) 
     {
-        // Get all survey data
-        $surveys = DB::table('survey_kepuasan_lulusans')->get();
+        $query = DB::table('survey_kepuasan_lulusans')
+            ->join('alumnis', 'survey_kepuasan_lulusans.alumni_id', '=', 'alumnis.alumni_id');
+
+        if ($prodiId) {
+            $query->where('alumnis.prodi_id', $prodiId);
+        }
+        if ($tahunLulus) {
+            $query->where('alumnis.tahun_lulus', $tahunLulus);
+        }
+
+        $surveys = $query->get();
         $totalResponden = $surveys->count();
 
         if ($totalResponden === 0) {
@@ -262,7 +256,7 @@ class AdminController extends Controller
 
         $categories = [
             'kerjasama_tim' => 'Kemampuan Kerjasama Tim',
-            'keahlian_bidang_it' => 'Keahlian Bidang IT', 
+            'keahlian_bidang_it' => 'Keahlian Bidang IT',
             'kemampuan_berbahasa_asing' => 'Kemampuan Berbahasa Asing',
             'kemampuan_berkomunikasi' => 'Kemampuan Berkomunikasi',
             'pengembangan_diri' => 'Pengembangan Diri',
@@ -274,7 +268,7 @@ class AdminController extends Controller
 
         foreach ($categories as $field => $title) {
             $count = $surveys->groupBy($field)->map->count();
-            
+
             $charts[] = [
                 'id' => $field,
                 'title' => $title,
@@ -289,6 +283,7 @@ class AdminController extends Controller
 
         return ['charts' => $charts];
     }
+
 
     public function laporan()
     {

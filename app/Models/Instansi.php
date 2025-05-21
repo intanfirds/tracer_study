@@ -25,4 +25,13 @@ class Instansi extends Model
     ];
 
     public $timestamps = true;
+
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class, 'alumni_id', 'alumni_id');
+    }
+    public function level()
+    {
+        return $this->belongsTo(Level::class, 'level_id', 'level_id');
+    }
 }

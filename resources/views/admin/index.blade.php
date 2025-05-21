@@ -19,6 +19,44 @@
 <div class="card shadow p-4 mb-4" style="border-radius: 16px;">
     <p class="fs-4 fw-bold">Dashboard Admin</p>
 
+    {{-- FILTER --}}
+    <form id="filterForm" class="row g-3 mb-4" method="GET" action="{{ route('admin.index') }}">
+    <div class="col-md-5">
+        <label for="filterProdi" class="form-label">Filter Program Studi</label>
+        <select class="form-select" id="filterProdi" name="prodi_id">
+            <option value="">Semua Program Studi</option>
+            @foreach($prodi as $p)
+                <option value="{{ $p->prodi_id }}" {{ (request('prodi_id') ?? $selectedProdi) == $p->prodi_id ? 'selected' : '' }}>
+                    {{ $p->nama_prodi }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label for="filterTahun" class="form-label">Filter Tahun Lulus</label>
+        <select class="form-select" id="filterTahun" name="tahun_lulus">
+            <option value="">Semua Tahun</option>
+            @foreach($alumni as $a)
+                <option value="{{ $a->tahun_lulus }}" {{ (request('tahun_lulus') ?? $selectedTahun) == $a->tahun_lulus ? 'selected' : '' }}>
+                    {{ $a->tahun_lulus }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <button type="submit" class="btn btn-primary d-block">Filter</button>
+    </div>
+</form>
+
+
+    <!-- Add this near your filters -->
+    <div id="loadingSpinner" style="display:none;" class="text-center my-3">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     {{-- TAB NAV --}}
     <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
       <li class="nav-item" role="presentation">
@@ -39,14 +77,14 @@
       <div class="tab-pane fade show active" id="layer1" role="tabpanel" aria-labelledby="layer1-tab">
         {{-- TABLES ONLY --}}
         <div class="table-responsive rounded mt-4" id="tableContainer" style="font-size: 0.85rem;">
-          @include('admin.data_table', ['tabel1' => $tabel1])
+          @include('admin.tab_profesi', ['tabel1' => $tabel1])
         </div>
       </div>
 
       {{-- LAYER 2 --}}
       <div class="tab-pane fade" id="layer2" role="tabpanel" aria-labelledby="layer2-tab">
         {{-- PIE CHARTS --}}
-        @include('admin.pie_charts', ['charts1' => $charts1, 'prodi' => $prodi, 'alumni' => $alumni])
+        @include('admin.tab_kepuasan', ['charts1' => $charts1, 'prodi' => $prodi, 'alumni' => $alumni])
         {{-- SURVEY CHARTS --}}
       </div>
     </div>
@@ -57,155 +95,99 @@
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
 google.charts.load('current', {packages:['corechart']});
+
+let chartsData = @json($charts1);
+let surveyChartsData = @json($surveyCharts);
+
 google.charts.setOnLoadCallback(() => {
     drawProfesiCharts();
     drawSurveyCharts();
 });
 
-// Draw profesi charts
 function drawProfesiCharts() {
-    @foreach ($charts1 as $index => $chart)
-        drawChart(
-            'profesi_chart_{{ $index }}',
-            '{{ $chart["title"] }}',
-            {!! json_encode($chart['labels']) !!},
-            {!! json_encode($chart['data']) !!}
-        );
-    @endforeach
+    chartsData.forEach((chart, index) => {
+        const chartId = 'profesi_chart_' + index;
+        const element = document.getElementById(chartId);
+        if (!element) return;
+
+        if (chart.labels.length === 0) {
+            element.innerHTML = '<div class="text-center text-muted mt-5">Data belum tersedia</div>';
+            return;
+        }
+
+        const dataArray = [['Label', 'Value']];
+        for (let i = 0; i < chart.labels.length; i++) {
+            const value = chart.data[i] > 0 ? chart.data[i] : 0.00001;
+            dataArray.push([chart.labels[i], value]);
+        }
+
+        const data = google.visualization.arrayToDataTable(dataArray);
+        const options = {
+            title: chart.title,
+            is3D: true,
+            legend: { position: 'labeled' },
+            pieSliceText: 'value',
+            sliceVisibilityThreshold: 0,
+            colors: ['#370617', '#6A040F', '#9D0208', '#D00000','#DC2F02', '#E85D04','#F48C06','#FAA307','#FFBA08'],
+            chartArea: {top: 10, bottom: 20, left: 10, right: 10, width: '100%', height: '80%'},
+            titlePosition: 'in',
+            titleTextStyle: { fontSize: 16, bold: true }
+        };
+
+        const pieChart = new google.visualization.PieChart(element);
+        pieChart.draw(data, options);
+    });
 }
 
-// Draw survey charts
 function drawSurveyCharts() {
     const labels = ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'];
     const colors = ['#28a745', '#17a2b8', '#ffc107', '#dc3545'];
 
-    @foreach($surveyCharts as $chart)
-        const data_{{ $chart['id'] }} = google.visualization.arrayToDataTable([
-            ['Category', 'Percentage'],
-            // Gunakan labels JavaScript, bukan $labels PHP
-            ['Sangat Baik', {{ $chart['data'][0] ?? 0 }}],
-            ['Baik', {{ $chart['data'][1] ?? 0 }}],
-            ['Cukup', {{ $chart['data'][2] ?? 0 }}],
-            ['Kurang', {{ $chart['data'][3] ?? 0 }}]
-        ]);
+    surveyChartsData.forEach(chart => {
+        const chartId = 'survey_chart_' + chart.id;
+        const element = document.getElementById(chartId);
+        if (!element) return;
 
-        const options_{{ $chart['id'] }} = {
-            title: '{{ $chart['title'] }}',
+        const total = chart.data.reduce((a, b) => a + b, 0);
+        if (total === 0) {
+            element.innerHTML = '<div class="text-center text-muted mt-5">Data belum tersedia</div>';
+            return;
+        }
+
+        const dataArray = [
+            ['Kategori', 'Persentase'],
+            ['Sangat Baik', chart.data[0] ?? 0],
+            ['Baik', chart.data[1] ?? 0],
+            ['Cukup', chart.data[2] ?? 0],
+            ['Kurang', chart.data[3] ?? 0]
+        ];
+
+        const data = google.visualization.arrayToDataTable(dataArray);
+        const options = {
+            title: chart.title,
             colors: colors,
             is3D: true,
             legend: { position: 'labeled' },
             pieSliceText: 'percentage',
             sliceVisibilityThreshold: 0,
-            chartArea: {
-                left: 0,
-                top: 30,
-                width: '100%',
-                height: '80%'
-            }
+            chartArea: { left: 0, top: 30, width: '100%', height: '80%' }
         };
 
-        const chart_{{ $chart['id'] }} = new google.visualization.PieChart(
-            document.getElementById('survey_chart_{{ $chart['id'] }}')
-        );
-        chart_{{ $chart['id'] }}?.draw(data_{{ $chart['id'] }}, options_{{ $chart['id'] }});
-    @endforeach
+        const pieChart = new google.visualization.PieChart(element);
+        pieChart.draw(data, options);
+    });
 }
 
-// Your existing drawChart function
-function drawChart(chartId, title, labels, dataValues) {
-    const dataArray = [['Label', 'Value']];
-    for (let i = 0; i < labels.length; i++) {
-      const value = dataValues[i] > 0 ? dataValues[i] : 0.00001;
-      const labelText = dataValues[i] > 0 ? dataValues[i] : '0';
-      dataArray.push([labels[i], value]);
-
-    }
-
-    const data = google.visualization.arrayToDataTable(dataArray);
-
-    const options = {
-        title: title,
-        is3D: true,
-        legend: { position: 'labeled' },
-        pieSliceText: 'value',
-        sliceVisibilityThreshold: 0, // <== Ini kunci utama agar tidak muncul "Other"
-        colors: ['#370617', '#6A040F', '#9D0208', '#D00000','#DC2F02', '#E85D04','#F48C06','#FAA307','#FFBA08'],
-        chartArea: {
-            top: 10,
-            bottom: 20,
-            left: 10,
-            right: 10,
-            width: '100%',
-            height: '80%'
-        },
-        titlePosition: 'in',
-        titleTextStyle: {
-            fontSize: 16,
-            bold: true
+// Redraw saat tab pindah
+document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', function (e) {
+        if (e.target.id === 'layer2-tab') {
+            drawSurveyCharts();
         }
-    };
-
-
-    const chart = new google.visualization.PieChart(document.getElementById(chartId));
-    chart.draw(data, options);
-  }
-
-  function drawAllCharts() {
-      console.log('Drawing charts...');
-      try {
-          @foreach ($charts1 as $index => $chart)
-              drawChart(
-                  'chart_div_{{ $index }}',
-                  '{{ $chart["title"] }}',
-                  {!! json_encode($chart['labels']) !!},
-                  {!! json_encode($chart['data']) !!}
-              );
-          @endforeach
-          console.log('Charts drawn successfully');
-      } catch(e) {
-          console.error('Error drawing charts:', e);
-      }
-  }
-
-  // Add event listener for tab changes to redraw charts
-  document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
-      tab.addEventListener('shown.bs.tab', function (e) {
-          if (e.target.id === 'layer2-tab') {
-              drawProfesiCharts();
-              drawSurveyCharts();
-          }
-      });
-  });
-</script>
-<script>
-  $('#filterProdi, #filterTahun').change(function(){
-      var prodi = $('#filterProdi').val();
-      var tahun = $('#filterTahun').val();
-      
-      $.ajax({
-          url: '{{ route("admin.getData") }}',
-          type: 'GET',
-          data: { prodi: prodi, tahun: tahun },
-          success: function(response) {
-              if(response.status === 'success') {
-                  // Update table
-                  $('#tableContainer').html(response.tableHtml);
-                  
-                  // Update charts
-                  $('#chartContainer').html(response.chartHtml);
-                  
-                  // Redraw charts
-                  setTimeout(function() {
-                      drawAllCharts();
-                  }, 100);
-              } else {
-                  console.error('Response error:', response.error);
-              }
-          },
-          error: function(xhr, status, error) {
-              console.error('AJAX Error:', error);
-          }
-      });
-  });
+        if (e.target.id === 'layer1-tab') {
+            drawProfesiCharts();
+        }
+    });
+});
 </script>
 @endpush

@@ -26,7 +26,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 
 Route::middleware(['ceklevel:Admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'index']);
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout'); //proses logout
     Route::get('/admin/daftarAlumni', [AdminController::class, 'halamanDaftarAlumni']);
     Route::post('/admin/daftarAlumni/list', [AdminController::class, 'daftarAlumni']); //menampilkan daftar alumni

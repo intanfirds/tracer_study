@@ -1,3 +1,18 @@
+{{-- PROFESI CHARTS --}}
+<h4 class="fw-bold mb-4">Chart Data Profesi</h4>
+<div class="row mb-4" id="chartContainer">
+    @foreach ($charts1 as $index => $chart)
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">{{ $chart["title"] }}</div>
+            <div class="card-body">
+                <div id="profesi_chart_{{ $index }}" style="width: 100%; height: 250px;"></div>
+            </div>
+        </div>
+    </div>
+    @endforeach
+</div>
+
 <h4 class="fw-bold mb-4">Tabel Sebaran Lingkup Tempat Kerja dan Kesesuaian Profesi dengan Infokom</h4>
 <table class="table table-sm table-bordered text-center align-middle mb-1">
     <thead class="table-light text-dark">
