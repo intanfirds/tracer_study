@@ -55,7 +55,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label>Program Studi</label>
-                                <input type="text" class="form-control" value="{{ $alumni->prodi->nama_prodi ?? '-' }}"
+                                <input type="text" name="nama_prodi" class="form-control" value="{{ $alumni->prodi->nama_prodi ?? '-' }}"
                                     readonly>
                                 <input type="hidden" name="prodi_id" value="{{ $alumni->prodi_id }}">
                             </div>
@@ -203,9 +203,9 @@
                     to_name: formData.get('nama_atasan'),
                     alumni_name: formData.get('nama'),
                     alumni_nim: formData.get('nim'),
-                    alumni_prodi: $('#alumni-form input[name="prodi_id"]')
-                .val(), // jika prodi dalam hidden input
-                    survey_link: '{{ url('/') }}'
+                    // alumni_prodi: $('#alumni-form input[name="prodi_id"]').val(), // jika prodi dalam hidden input
+                    alumni_prodi: formData.get('nama_prodi'),
+                    survey_link: '{{ url('/survey') }}'
                 };
 
 
