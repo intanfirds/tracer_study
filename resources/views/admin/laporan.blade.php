@@ -11,7 +11,7 @@
       <a href="{{ url('/admin/export_survey') }}" class="btn btn-success mb-2">
         <i class="fa fa-file-excel"></i> Export Survey Kepuasan
       </a>
-
+      
       <p>Laporan</p>
     </div>
   </div>
