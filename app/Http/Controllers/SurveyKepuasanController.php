@@ -74,100 +74,71 @@ class SurveyKepuasanController extends Controller
     }
 
 
-    public function export_survey()
-    {
-    /**********************
-     * 1. Ambil data riil *
-     **********************/
-    // Contoh kalau sudah punya tabel 'kepuasan_surveys'
-    // $surveys = DB::table('kepuasan_surveys')->get();
-    // if ($surveys->isEmpty()) {
-    //     return redirect()->back()->with('error', 'Data belum tersedia');
-    // }
+ public function export_excel()
+{
+    $data = SurveyKepuasanLulusan::with(['alumni.prodi']) // pastikan relasi alumni dan prodi benar
+        ->orderBy('tanggal', 'desc')
+        ->get();
 
-    /********************************************************
-     *  Jika memang belum ada data sama sekali -> tolak     *
-     ********************************************************/
-    // Untuk demo, anggap $totalResponden = 0
-    $totalResponden = 0;
-    if ($totalResponden === 0) {
-        return redirect()->back()->with('error', 'Data belum tersedia');
-    }
-
-    /**********************************************
-     * 2. Bangun array $data (di sini masih dummy) *
-     **********************************************/
-    $kemampuan = [
-        "Kerjasama Tim",
-        "Keahlian di Bidang TI",
-        "Kemampuan Bahasa Asing",
-        "Kemampuan Berkomunikasi",
-        "Pengembangan Diri",
-        "Kepemimpinan",
-        "Etos Kerja"
-    ];
-
-    $data = [];
-    foreach ($kemampuan as $i => $item) {
-        // ganti 0% dengan perhitungan dari $surveys kalau sudah punya
-        $data[] = [
-            'no'            => $i + 1,
-            'jenis'         => $item,
-            'sangat_baik'   => '0%',
-            'baik'          => '0%',
-            'cukup'         => '0%',
-            'kurang'        => '0%',
-        ];
-    }
-
-    /*****************************
-     * 3. Generate file Spreadsheet *
-     *****************************/
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setTitle('Survey Kepuasan');
 
     // Header
-    $headers = ['No', 'Jenis Kemampuan', 'Sangat Baik', 'Baik', 'Cukup', 'Kurang'];
-    $col = 'A';
-    foreach ($headers as $h) {
-        $sheet->setCellValue($col.'1', $h);
-        $sheet->getStyle($col.'1')->getFont()->setBold(true);
-        $col++;
+    $sheet->setCellValue('A1', 'No');
+    $sheet->setCellValue('B1', 'NIM');
+    $sheet->setCellValue('C1', 'Nama');
+    $sheet->setCellValue('D1', 'Program Studi');
+    $sheet->setCellValue('E1', 'Tanggal');
+    $sheet->setCellValue('F1', 'Kerjasama Tim');
+    $sheet->setCellValue('G1', 'Keahlian IT');
+    $sheet->setCellValue('H1', 'Bahasa Asing');
+    $sheet->setCellValue('I1', 'Komunikasi');
+    $sheet->setCellValue('J1', 'Pengembangan Diri');
+    $sheet->setCellValue('K1', 'Kepemimpinan');
+    $sheet->setCellValue('L1', 'Etos Kerja');
+    $sheet->setCellValue('M1', 'Saran Kurikulum');
+    $sheet->setCellValue('N1', 'Kemampuan Tidak Terpenuhi');
+    $sheet->setCellValue('O1', 'Status');
+
+    $sheet->getStyle('A1:O1')->getFont()->setBold(true);
+
+    $baris = 2;
+    $no = 1;
+    foreach ($data as $item) {
+        $sheet->setCellValue('A' . $baris, $no++);
+        $sheet->setCellValue('B' . $baris, $item->alumni->NIM ?? '');
+        $sheet->setCellValue('C' . $baris, $item->alumni->nama ?? '');
+        $sheet->setCellValue('D' . $baris, $item->alumni->prodi->nama_prodi ?? '');
+        $sheet->setCellValue('E' . $baris, $item->tanggal);
+        $sheet->setCellValue('F' . $baris, $item->kerjasama_tim);
+        $sheet->setCellValue('G' . $baris, $item->keahlian_bidang_it);
+        $sheet->setCellValue('H' . $baris, $item->kemampuan_berbahasa_asing);
+        $sheet->setCellValue('I' . $baris, $item->kemampuan_berkomunikasi);
+        $sheet->setCellValue('J' . $baris, $item->pengembangan_diri);
+        $sheet->setCellValue('K' . $baris, $item->kepemimpinan);
+        $sheet->setCellValue('L' . $baris, $item->etos_kerja);
+        $sheet->setCellValue('M' . $baris, $item->saran_untuk_kurikulum_prodi);
+        $sheet->setCellValue('N' . $baris, $item->kemampuan_tdk_terpenuhi);
+        $sheet->setCellValue('O' . $baris, $item->status_pengisian);
+        $baris++;
     }
 
-    // Isi
-    $row = 2;
-    foreach ($data as $d) {
-        $sheet->fromArray([$d['no'], $d['jenis'], $d['sangat_baik'], $d['baik'], $d['cukup'], $d['kurang']], null, "A{$row}");
-        $row++;
-    }
-
-    // Rata-rata (masih dummy)
-    $sheet->setCellValue("B{$row}", 'Rata-rata');
-    $sheet->setCellValue("C{$row}", '0%');
-    $sheet->setCellValue("D{$row}", '0%');
-    $sheet->setCellValue("E{$row}", '0%');
-    $sheet->setCellValue("F{$row}", '0%');
-
-    // Auto-size kolom
-    foreach (range('A', 'F') as $col) {
+    foreach (range('A', 'O') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
-    /******************
-     * 4. Proses download *
-     ******************/
-    $filename = 'Survey_Kepuasan_'.date('Y-m-d_H-i-s').'.xlsx';
-    $writer   = IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $sheet->setTitle('Survey Kepuasan Lulusan');
 
-    // Output ke browser
+    $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $filename = 'Survey_Kepuasan_' . date('Ymd_His') . '.xlsx';
+
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header("Content-Disposition: attachment; filename=\"{$filename}\"");
+    header('Content-Disposition: attachment;filename="' . $filename . '"');
     header('Cache-Control: max-age=0');
     $writer->save('php://output');
     exit;
-    }
+}
+
 
     public function getInstansi($alumni_id)
     {

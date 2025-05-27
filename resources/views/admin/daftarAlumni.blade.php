@@ -53,10 +53,10 @@
             <td>{{ $item->prodi->nama_prodi }}</td>
             <td>
                 <a href="{{ url('/admin/detail', $item->alumni_id) }}" class="btn btn-sm btn-primary">
-                    <i class="fa fa-eye"></i>
+                    <i class="fa fa-eye"></i> 
                 </a>
                 <a href="{{ url('/admin/edit', $item->alumni_id) }}" class="btn btn-sm btn-warning">
-                    <i class="fa fa-edit"></i>
+                   <i class="fa fa-pen"></i>
                 </a>
                 <form action="{{ url('/admin/delete', $item->alumni_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                     @csrf

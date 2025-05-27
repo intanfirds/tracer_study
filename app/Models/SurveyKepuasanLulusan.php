@@ -29,4 +29,15 @@ class SurveyKepuasanLulusan extends Model
     ];
 
     public $timestamps = true;
+
+    public function alumni()
+{
+    return $this->belongsTo(Alumni::class, 'alumni_id', 'alumni_id');
+}
+
+public function instansi()
+{
+    return $this->belongsTo(Instansi::class, 'instansi_id', 'instansi_id');
+}
+
 }
