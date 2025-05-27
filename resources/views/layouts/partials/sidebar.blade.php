@@ -1,5 +1,6 @@
 <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main">
   <div class="sidenav-header text-center py-4">
+    <img src="{{ asset('images/logo1.png') }}" alt="Logo" style="height: 60px; margin-right: 15px;">
     <h4 class="mb-1">Tracer Study</h4>
     <p class="text-sm mb-0">Polinema</p>
   </div>

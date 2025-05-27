@@ -23,7 +23,9 @@ class DatabaseSeeder extends Seeder
             KategoriProfesiSeeder::class,
             PermintaanPengisianSeeder::class,
             DetailProfesiAlumniSeeder::class,
-            SurveyKepuasanLulusanSeeder::class
+            SurveyKepuasanLulusanSeeder::class,
+            TokenAlumni::class,
+            TokenInstansi::class,
         ]);
     }
 }

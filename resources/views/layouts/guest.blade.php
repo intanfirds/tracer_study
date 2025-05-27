@@ -31,7 +31,7 @@
 
                 <!-- Tombol Login -->
                 <a href="{{ url('/login') }}" class="btn btn-light btn-secondary mt-1">
-                    Login
+                    Login Admin
                 </a>
             </div>
         </nav>
