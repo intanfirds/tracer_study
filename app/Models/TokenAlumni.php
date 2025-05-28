@@ -16,6 +16,6 @@ class TokenAlumni extends Model
         'token',
         'alumni_id',
         'expired_at',
-        'is_used',
+        'used_at',
     ];
 }

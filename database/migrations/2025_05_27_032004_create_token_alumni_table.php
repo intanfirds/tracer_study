@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('token_alumni', function (Blueprint $table) {
             $table->id('token_alumni_id');
-            $table->string('token');
+            $table->string('email')->nullable();
+            $table->string('token')->unique();
             $table->unsignedBigInteger('alumni_id');
             $table->foreign('alumni_id')->references('alumni_id')->on('alumnis');
-            $table->dateTime('expired_at')->nullable();
-            $table->boolean('is_used')->default(false);
+            $table->dateTime('expires_at');
+            $table->dateTime('used_at')->nullable();
             $table->timestamps();
         });
     }
@@ -28,5 +29,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('token_alumni');
-    }
+    }   
 };
