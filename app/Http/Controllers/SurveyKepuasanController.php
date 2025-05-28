@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumni;
 use App\Models\Instansi;
+use App\Models\TokenInstansi;
 use App\Models\SurveyKepuasanLulusan;
 use Illuminate\Http\Request;
 //export survey kepuasan
@@ -17,9 +18,24 @@ class SurveyKepuasanController extends Controller
 {
     public function create()
     {
-        $alumnis = Alumni::all();
-        $instansis = Instansi::all();
-        return view('survey.create', compact('alumnis', 'instansis')); // Pastikan file blade-nya ada di resources/views/instansi/create.blade.php
+        // Check if user is verified with token
+        if (!Session::get('verified')) {
+            return redirect()->route('survey.token')
+                ->with('error', 'Silakan verifikasi token terlebih dahulu');
+        }
+
+        // Get instansi_id from session
+        $instansi_id = Session::get('verified_instansi_id');
+
+        // Get instansi data
+        $instansi = Instansi::findOrFail($instansi_id);
+        
+        // Get first alumni associated with this instansi
+        $alumni = Alumni::whereHas('instansi', function($query) use ($instansi_id) {
+            $query->where('instansi_id', $instansi_id);
+        })->firstOrFail();
+
+        return view('survey.create', compact('instansi', 'alumni'));
     }
 
     public function store(Request $request)
@@ -38,9 +54,14 @@ class SurveyKepuasanController extends Controller
             'saran_untuk_kurikulum_prodi' => 'nullable|string',
             'kemampuan_tdk_terpenuhi' => 'nullable|string',
             'status_pengisian' => 'required|string',
+            'nama_instansi' => 'required|string',
+            'nama_atasan' => 'required|string',
+            'lokasi_instansi' => 'required|string',
+            'jabatan' => 'required|string',
         ]);
 
         try {
+            DB::beginTransaction();
             $survey = SurveyKepuasanLulusan::updateOrCreate(
                 ['alumni_id' => $request->alumni_id], // find by alumni_id
                 [
@@ -58,18 +79,53 @@ class SurveyKepuasanController extends Controller
                     'status_pengisian' => 'Selesai'
                 ]
             );
+            $instansi = Instansi::updateOrCreate(
+                ['instansi_id' => $request->instansi_id],
+                [
+                    'nama_instansi' => $request->nama_instansi,
+                    'nama_atasan' => $request->nama_atasan,
+                    'lokasi_instansi' => $request->lokasi_instansi,
+                    'jabatan' => $request->jabatan
+                ]
+            );
+            
+            // Mark token as used after successful survey submission
+            $token = Session::get('survey_token');
+                if ($token) {
+                    $tokenUpdate = TokenInstansi::where('token', $token)
+                        ->where('is_used', false)
+                        ->update([
+                            'is_used' => true,
+                            'updated_at' => now()
+                        ]);
 
-            $message = $survey->wasRecentlyCreated 
-                ? 'Survey berhasil disimpan.' 
-                : 'Survey berhasil diperbarui.';
+                    if (!$tokenUpdate) {
+                        throw new \Exception('Gagal memperbarui status token.');
+                    }
+                }
 
-            return redirect()->back()->with('success', $message);
+            DB::commit();
+
+            // Clear all related session data after successful commit
+            Session::forget(['survey_token', 'verified_instansi_id', 'verified']);
+
+            return redirect()->route('survey.token')
+            ->with('alert', [
+                'type' => 'success',
+                'message' => 'Terimakasih telah mengirim survey. Survey Anda telah berhasil disimpan dan token telah digunakan.'
+            ]);
+
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Survey store error: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat menyimpan survey.')
-                ->withInput();
+            
+            Session::flash('alert', [
+                'type' => 'danger',
+                'message' => 'Terjadi kesalahan saat menyimpan survey.'
+            ]);
+
+            return back()->withInput();
         }
     }
 
@@ -150,6 +206,37 @@ class SurveyKepuasanController extends Controller
             'nama_atasan' => $alumni->instansi->nama_atasan ?? '',
             'lokasi_instansi' => $alumni->instansi->lokasi_instansi ?? '',
         ]);
+    }
+
+    public function token()
+    {
+        return view('survey.insertToken');
+    }
+
+    public function verifyToken(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string'
+        ]);
+
+        $token = $request->token;
+        
+        // Check if token exists and is valid in database
+        $tokenInstansi = TokenInstansi::where('token', $token)
+            ->where('is_used', false)
+            ->first();
+
+        if (!$tokenInstansi) {
+            return back()->with('error', 'Token tidak valid atau sudah digunakan. Silakan cek kembali email Anda.');
+        }
+
+        // Store token and instansi_id in session
+        Session::put('survey_token', $token);
+        Session::put('verified_instansi_id', $tokenInstansi->instansi_id);
+        Session::put('verified', true);
+
+        return redirect()->route('survey.create')
+            ->with('success', 'Token berhasil diverifikasi');
     }
 
 

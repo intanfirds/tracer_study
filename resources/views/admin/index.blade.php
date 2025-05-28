@@ -17,7 +17,7 @@
 {{-- AREA KONTEN BERSHADOW --}}
 
 <div class="card shadow p-4 mb-4" style="border-radius: 16px;">
-    <p class="fs-4 fw-bold">Dashboard Admin</p>
+    <h3 class="card-title">Dashboard Admin</h3>
 
     {{-- FILTER --}}
     <form id="filterForm" class="row g-3 mb-4" method="GET" action="{{ route('admin.index') }}">
@@ -45,7 +45,9 @@
     </div>
     <div class="col-md-2">
         <label class="form-label">&nbsp;</label>
-        <button type="submit" class="btn btn-primary d-block">Filter</button>
+        <button type="submit" class="btn btn-primary d-block w-100">
+            <i class="fas fa-filter me-2"></i>Filter
+        </button>
     </div>
 </form>
 
