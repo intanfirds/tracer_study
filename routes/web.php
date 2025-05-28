@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SurveyKepuasanController;
+use App\Http\Controllers\TokenAlumniController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 /*
@@ -20,6 +21,9 @@ use Illuminate\Support\Facades\Session;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm']);
+Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);
 
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -56,7 +60,7 @@ Route::middleware(['ceklevel:Alumni'])->group(function () {
     Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
     Route::get('/alumni/logout', [AuthController::class, 'logout'])->name('alumni.logout'); //proses logout
     Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
-    Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
+    // Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
     Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile');
 });
 
