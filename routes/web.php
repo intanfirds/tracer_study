@@ -44,8 +44,10 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/get-data', [AdminController::class, 'getData'])->name('admin.getData');
 });
 
-Route::get('/survey', [SurveyKepuasanController::class, 'create'])->name('survey.create');
-Route::post('/survey', [SurveyKepuasanController::class, 'store'])->name('survey.store');
+Route::get('/survey', [SurveyKepuasanController::class, 'token'])->name('survey.token');
+Route::post('/survey/verify-token', [SurveyKepuasanController::class, 'verifyToken'])->name('verify.token');
+Route::get('/survey/index', [SurveyKepuasanController::class, 'create'])->name('survey.create');
+Route::post('/survey/index', [SurveyKepuasanController::class, 'store'])->name('survey.store');
 Route::get('/admin/export_survey', [SurveyKepuasanController::class, 'export_excel']);
 Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getInstansi']);
 
