@@ -39,6 +39,7 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/import', [AlumniController::class, 'showImportForm'])->name('admin.import.form');
     Route::post('/admin/import', [AlumniController::class, 'import'])->name('admin.import');
     Route::get('/admin/laporan', [AdminController::class, 'laporan']);
+    Route::get('/admin/filterAlumni', [AdminController::class, 'filterAlumni']);
 
     Route::get('/admin/detail/{id}', [AdminController::class, 'show'])->name('admin.detail');
     Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
