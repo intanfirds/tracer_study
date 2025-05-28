@@ -25,6 +25,12 @@ Route::get('/', function () {
 Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm']);
 Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);
 
+Route::get('/cek-token-alumni', function () {
+    return view('cek_token_alumni');
+});
+
+Route::post('/verifikasi-token-alumni', [AlumniController::class, 'verifikasiToken'])->name('verifikasi.token');
+
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 

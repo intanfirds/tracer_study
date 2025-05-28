@@ -3,7 +3,8 @@
 <head>
     <title>Request Login Token</title>
     {{-- <script src="https://cdn.emailjs.com/sdk/3.2/email.min.js"></script> --}}
-    <script src="https://cdn.emailjs.com/sdk/3.6/email.min.js"></script>
+    {{-- <script src="https://cdn.emailjs.com/sdk/3.6/email.min.js"></script> --}}
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
         (function(){
             emailjs.init("fHVyExSnS3Edg1P2l"); // Ganti dengan user ID EmailJS kamu
@@ -40,13 +41,14 @@
             })
             .then(res => res.json())
             .then(data => {
-                if(data.link) {
+                if(data.token) {
                     statusMessage.textContent = data.message;
 
                     // Kirim email via EmailJS
                     emailjs.send('service_n8pyris', 'template_khtm20x', {
                         to_email: email,
-                        login_link: data.link,
+                        token: data.token,
+                        login_link: `{{ url('/cek-token-alumni') }}?email=${encodeURIComponent(email)}&token=${data.token}`,
                     })
                     .then(() => {
                         statusMessage.textContent += ' Email berhasil dikirim!';
