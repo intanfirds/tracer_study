@@ -135,34 +135,49 @@
                     <h5 class="section-title">Data Alumni</h5>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="alumni_id" class="form-label">Pilih Alumni</label>
-                            <select name="alumni_id" id="alumni_id" class="form-select" required>
-                                <option value="">-- Pilih Alumni --</option>
-                                @foreach($alumnis as $alumni)
-                                    <option value="{{ $alumni->alumni_id }}"
-                                        data-instansi="{{ $alumni->instansi->nama_instansi ?? '' }}"
-                                        data-atasan="{{ $alumni->instansi->nama_atasan ?? '' }}"
-                                        data-lokasi="{{ $alumni->instansi->lokasi_instansi ?? '' }}">
-                                        {{ $alumni->nama }} ({{ $alumni->NIM }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <input type="hidden" name="instansi_id" id="instansi_id">
-                        <div class="col-md-6">
-                            <label for="nama_instansi" class="form-label">Nama Instansi</label>
-                            <input type="text" name="nama_instansi" id="nama_instansi" class="form-control" readonly>
+                            <label class="form-label fw-semibold">Nama Alumni</label>
+                            <input type="text" class="form-control" value="{{ $alumni->nama }}" readonly>
+                            <input type="hidden" name="alumni_id" value="{{ $alumni->alumni_id }}">
                         </div>
                         <div class="col-md-6">
-                            <label for="nama_atasan" class="form-label">Nama Atasan</label>
-                            <input type="text" name="nama_atasan" id="nama_atasan" class="form-control" readonly>
+                            <label class="form-label fw-semibold">NIM</label>
+                            <input type="text" class="form-control" value="{{ $alumni->NIM }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Instansi Section -->
+                <div class="survey-section">
+                    <h5 class="section-title">Data Instansi
+                        <small class="text-muted" style="font-size: 0.75rem;">
+                            <i class="fas fa-info-circle me-1"></i>
+                            *data instansi bisa di edit jika ada kesalahan input oleh alumni
+                        </small>
+                    </h5>
+                    <div class="row g-3">
+                        <input type="hidden" name="instansi_id" value="{{ $instansi->instansi_id }}">
+                        <div class="col-md-6">
+                            <label for="nama_instansi" class="form-label fw-semibold">Nama Instansi</label>
+                            <input type="text" name="nama_instansi" id="nama_instansi" class="form-control" 
+                                   value="{{ $instansi->nama_instansi }}">
                         </div>
                         <div class="col-md-6">
-                            <label for="lokasi_instansi" class="form-label">Lokasi Instansi</label>
-                            <input type="text" name="lokasi_instansi" id="lokasi_instansi" class="form-control" readonly>
+                            <label for="lokasi_instansi" class="form-label fw-semibold">Lokasi Instansi</label>
+                            <input type="text" name="lokasi_instansi" id="lokasi_instansi" class="form-control" 
+                                   value="{{ $instansi->lokasi_instansi }}">
                         </div>
                         <div class="col-md-6">
-                            <label for="tanggal" class="form-label">Tanggal</label>
+                            <label for="nama_atasan" class="form-label fw-semibold">Nama Atasan</label>
+                            <input type="text" name="nama_atasan" id="nama_atasan" class="form-control" 
+                                   value="{{ $instansi->nama_atasan }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="jabatan" class="form-label fw-semibold">Jabatan Atasan</label>
+                            <input type="text" name="jabatan" id="jabatan" class="form-control"
+                                   value="{{ $instansi->jabatan }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tanggal" class="form-label fw-semibold">Tanggal Pengisian</label>
                             <input type="date" name="tanggal" id="tanggal" class="form-control" required>
                         </div>
                     </div>
@@ -233,27 +248,6 @@
         $(document).ready(function() {
             // Set today's date as default
             $('#tanggal').val(new Date().toISOString().substr(0, 10));
-            
-            $('#alumni_id').on('change', function () {
-                var alumniId = $(this).val();
-                if (alumniId) {
-                    $.ajax({
-                        url: '/get-instansi/' + alumniId,
-                        type: 'GET',
-                        success: function (data) {
-                            $('#nama_instansi').val(data.nama_instansi);
-                            $('#nama_atasan').val(data.nama_atasan);
-                            $('#lokasi_instansi').val(data.lokasi_instansi);
-                            $('#instansi_id').val(data.instansi_id);
-                        }
-                    });
-                } else {
-                    $('#nama_instansi').val('');
-                    $('#nama_atasan').val('');
-                    $('#lokasi_instansi').val('');
-                    $('#instansi_id').val('');
-                }
-            });
         });
     </script>
 </body>

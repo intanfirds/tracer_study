@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SurveyKepuasanController;
+use App\Http\Controllers\TokenAlumniController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 /*
@@ -21,6 +22,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm']);
+Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);
+
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
@@ -35,6 +39,7 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/import', [AlumniController::class, 'showImportForm'])->name('admin.import.form');
     Route::post('/admin/import', [AlumniController::class, 'import'])->name('admin.import');
     Route::get('/admin/laporan', [AdminController::class, 'laporan']);
+    Route::get('/admin/filterAlumni', [AdminController::class, 'filterAlumni']);
 
     Route::get('/admin/detail/{id}', [AdminController::class, 'show'])->name('admin.detail');
     Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
@@ -44,8 +49,10 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/get-data', [AdminController::class, 'getData'])->name('admin.getData');
 });
 
-Route::get('/survey', [SurveyKepuasanController::class, 'create'])->name('survey.create');
-Route::post('/survey', [SurveyKepuasanController::class, 'store'])->name('survey.store');
+Route::get('/survey', [SurveyKepuasanController::class, 'token'])->name('survey.token');
+Route::post('/survey/verify-token', [SurveyKepuasanController::class, 'verifyToken'])->name('verify.token');
+Route::get('/survey/index', [SurveyKepuasanController::class, 'create'])->name('survey.create');
+Route::post('/survey/index', [SurveyKepuasanController::class, 'store'])->name('survey.store');
 Route::get('/admin/export_survey', [SurveyKepuasanController::class, 'export_excel']);
 Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getInstansi']);
 Route::get('/admin/export_belum_survey', [AlumniController::class, 'export_belum_survey']);
@@ -57,7 +64,7 @@ Route::middleware(['ceklevel:Alumni'])->group(function () {
     Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
     Route::get('/alumni/logout', [AuthController::class, 'logout'])->name('alumni.logout'); //proses logout
     Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
-    Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
+    // Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
     Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile');
 });
 

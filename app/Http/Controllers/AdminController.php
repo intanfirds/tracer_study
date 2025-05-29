@@ -361,6 +361,19 @@ class AdminController extends Controller
         
     }
 
+    public function filterAlumni(Request $request)
+    {
+        $query = Alumni::with('prodi');
+
+        if ($request->filled('prodi_id')) {
+            $query->where('prodi_id', $request->prodi_id);
+        }
+
+        $alumni = $query->get();
+
+        return view('admin.alumniTable', compact('alumni'));
+    }
+
     public function show($id)
 {
     $alumni = Alumni::with(['prodi', 'level', 'detailProfesi', 'instansi'])->findOrFail($id);
