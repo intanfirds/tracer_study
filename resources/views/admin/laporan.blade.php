@@ -14,6 +14,10 @@
       <a href="{{ url('/admin/export_belum_survey') }}" class="btn btn-danger mb-2">
           <i class="fa fa-file-excel"></i> Export Alumni Belum Isi Survey
       </a>
+      <a href="{{ route('survey.export.belum_isi') }}" class="btn btn-warning mb-3">
+    Export Atasan Belum Mengisi Survey
+      </a>
+
       <p>Laporan</p>
     </div>
   </div>

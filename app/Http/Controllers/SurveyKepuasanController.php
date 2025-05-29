@@ -206,6 +206,64 @@ public function export_excel()
     $writer->save('php://output');
     exit;
 }
+public function exportBelumIsiExcel()
+{
+    // Ambil data instansi yang belum punya survey dan eager load alumni
+    $data = Instansi::whereNotIn('instansi_id', function($query) {
+        $query->select('instansi_id')->from('survey_kepuasan_lulusans');
+    })->with('alumni')->get();
+
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Judul
+    $sheet->setCellValue('A1', 'Atasan yang Belum Mengisi Survey Kepuasan');
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+    $sheet->mergeCells('A1:F1'); // ada tambahan kolom alumni
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+    // Header
+    $headerRow = 3;
+    $sheet->setCellValue('A'.$headerRow, 'No');
+    $sheet->setCellValue('B'.$headerRow, 'Nama Instansi');
+    $sheet->setCellValue('C'.$headerRow, 'Nama Atasan');
+    $sheet->setCellValue('D'.$headerRow, 'Jabatan');
+    $sheet->setCellValue('E'.$headerRow, 'Lokasi Instansi');
+    $sheet->setCellValue('F'.$headerRow, 'Nama Alumni');
+
+    $sheet->getStyle('A'.$headerRow.':F'.$headerRow)->getFont()->setBold(true);
+
+    // Data
+    $row = $headerRow + 1;
+    $no = 1;
+    foreach ($data as $item) {
+        $sheet->setCellValue('A'.$row, $no++);
+        $sheet->setCellValue('B'.$row, $item->nama_instansi);
+        $sheet->setCellValue('C'.$row, $item->nama_atasan);
+        $sheet->setCellValue('D'.$row, $item->jabatan);
+        $sheet->setCellValue('E'.$row, $item->lokasi_instansi);
+
+        $namaAlumni = $item->alumni ? $item->alumni->nama : '-';
+        $sheet->setCellValue('F'.$row, $namaAlumni);
+
+        $row++;
+    }
+
+    foreach (range('A', 'F') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    $sheet->setTitle('Atasan Belum Isi Survey');
+
+    $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $filename = 'Atasan_Belum_Mengisi_Survey_' . date('Ymd_His') . '.xlsx';
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit;
+}
 
 
     public function getInstansi($alumni_id)

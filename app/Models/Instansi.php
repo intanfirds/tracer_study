@@ -36,4 +36,10 @@ class Instansi extends Model
     {
         return $this->belongsTo(Level::class, 'level_id', 'level_id');
     }
+    public function surveyKepuasanLulusan()
+    {
+        return $this->hasMany(SurveyKepuasanLulusan::class, 'instansi_id', 'instansi_id');
+    }
+    
+
 }

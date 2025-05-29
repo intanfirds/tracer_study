@@ -56,6 +56,7 @@ Route::post('/survey/index', [SurveyKepuasanController::class, 'store'])->name('
 Route::get('/admin/export_survey', [SurveyKepuasanController::class, 'export_excel']);
 Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getInstansi']);
 Route::get('/admin/export_belum_survey', [AlumniController::class, 'export_belum_survey']);
+Route::get('/survey/export-belum-isi', [SurveyKepuasanController::class, 'exportBelumIsiExcel'])->name('survey.export.belum_isi');
 
 
 
