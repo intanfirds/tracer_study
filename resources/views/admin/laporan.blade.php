@@ -11,8 +11,9 @@
       <a href="{{ url('/admin/export_survey') }}" class="btn btn-success mb-2">
   <i class="fa fa-file-excel"></i> Export Survey Kepuasan
       </a>
-
-
+      <a href="{{ url('/admin/export_belum_survey') }}" class="btn btn-danger mb-2">
+          <i class="fa fa-file-excel"></i> Export Alumni Belum Isi Survey
+      </a>
       <p>Laporan</p>
     </div>
   </div>

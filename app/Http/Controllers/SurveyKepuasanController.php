@@ -151,6 +151,11 @@ class SurveyKepuasanController extends Controller
             'lokasi_instansi' => $alumni->instansi->lokasi_instansi ?? '',
         ]);
     }
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class, 'alumni_id');
+    }
+
 
 
 }

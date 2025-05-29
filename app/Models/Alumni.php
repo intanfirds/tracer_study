@@ -54,4 +54,6 @@ class Alumni extends Authenticatable
     return $this->hasOne(Instansi::class, 'alumni_id', 'alumni_id');
     }
 
+    
+
 }
