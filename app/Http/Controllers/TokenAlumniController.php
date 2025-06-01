@@ -11,7 +11,7 @@ class TokenAlumniController extends Controller
 {
     public function showForm()
     {
-        return view('auth.request-token-alumni');
+        return view('alumni.request-token-alumni');
     }
 
     public function requestToken(Request $request)

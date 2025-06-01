@@ -10,7 +10,7 @@ use App\Models\JenisInstansi;
 use App\Models\KategoriProfesi;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use App\Models\TokenInstansi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -18,24 +18,37 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class AlumniController extends Controller
 {
     // Menampilkan daftar alumni
-    public function index()
-    {
-        $alumnis = Alumni::whereHas('detailProfesi')
-            ->with(['prodi', 'detailProfesi'])
-            ->get();
+    // public function index()
+    // {
+    //     $alumnis = Alumni::whereHas('detailProfesi')
+    //         ->with(['prodi', 'detailProfesi'])
+    //         ->get();
 
-        return view('alumni.index', compact('alumnis'));
-    }
+    //     return view('alumni.index', compact('alumnis'));
+    // }
 
     // Menampilkan form pengisian data alumni
-    public function form()
+    public function form(Request $request)
     {
-        $alumni = \App\Models\Alumni::find(session('id'));
-        // dd($alumni);
+        $token = $request->query('token'); // ambil dari URL ?token=xxxx
+
+        $tokenData = DB::table('token_alumni')
+            ->where('token', $token)
+            ->where('expires_at', '>', Carbon::now())
+            ->first();
+
+        if (!$tokenData) {
+            return redirect('request-token-alumni')->with('error', 'Token tidak valid atau sudah kadaluarsa.');
+        }
+
+        $alumni = Alumni::where('email', $tokenData->email)->first();
 
         if (!$alumni) {
-            return redirect('login')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect('request-token-alumni')->with('error', 'Data alumni tidak ditemukan.');
         }
+
+        // Optional: simpan alumni_id di session agar bisa dipakai di route lain
+        session(['id' => $alumni->alumni_id]);
 
         $prodis = ProgramStudi::all();
         $detailProfesiAlumni = DetailProfesiAlumni::all();
@@ -43,6 +56,34 @@ class AlumniController extends Controller
         $jenis_instansis = JenisInstansi::all();
 
         return view('alumni.form', compact('alumni', 'prodis', 'detailProfesiAlumni', 'kategoris', 'jenis_instansis'));
+    }
+
+    public function requestToken(Request $request)
+    {
+        $request->validate([
+            'instansi_id' => 'required|exists:instansi,instansi_id',
+        ]);
+
+        $instansis = Instansi::find($request->instansi_id);
+
+        // Buat token random 12 digit
+        $token = '';
+        for ($i = 0; $i < 12; $i++) {
+            $token .= rand(0, 9);
+        }
+
+        // Simpan token ke tabel token_instansi
+        TokenInstansi::create([
+            'instansi_id' => $instansis->instansi_id,
+            'email'       => $instansis->email_atasan, // tetap disimpan di DB
+            'token'       => $token,
+            'expires_at'  => Carbon::now()->addMonth(),
+        ]);
+
+        return response()->json([
+            'message' => 'Token berhasil dibuat!',
+            'token'   => $token,
+        ]);
     }
 
     // Menyimpan data form
@@ -129,13 +170,13 @@ class AlumniController extends Controller
         }
     }
 
-    public function profile()
-    {
-        // dd(session()->all());
-        $id = session('id'); // Atau bisa juga pakai Auth::user()->id kalau login pakai auth
-        $alumni = Alumni::findOrFail($id);
-        return view('alumni.profile', compact('alumni'));
-    }
+    // public function profile()
+    // {
+    //     // dd(session()->all());
+    //     $id = session('id'); // Atau bisa juga pakai Auth::user()->id kalau login pakai auth
+    //     $alumni = Alumni::findOrFail($id);
+    //     return view('alumni.profile', compact('alumni'));
+    // }
 
     public function showImportForm()
     {
@@ -265,10 +306,10 @@ class AlumniController extends Controller
         $email = $request->email;
         $token = $request->token;
 
-        $alumni = DB::table('alumni_tokens')
-            ->where('email', $email)
+        $alumni = DB::table('token_alumni')
+            // ->where('email', $email)
             ->where('token', $token)
-            ->where('expired_at', '>', now())
+            ->where('expires_at', '>', now())
             ->first();
 
         if ($alumni) {
