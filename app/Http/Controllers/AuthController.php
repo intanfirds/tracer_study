@@ -33,15 +33,15 @@ class AuthController extends Controller
             return redirect('/admin');
         }
 
-        // Cek ke tabel Alumni (berdasarkan nim)
-        $alumni = Alumni::where('nim', $request->username)->first();
-        if ($alumni && Hash::check($request->password, $alumni->password)) {
-            Session::put('id', $alumni->alumni_id);
-            Session::put('level', 'Alumni');
-            Session::put('nama', $alumni->nama);
+        // // Cek ke tabel Alumni (berdasarkan nim)
+        // $alumni = Alumni::where('nim', $request->username)->first();
+        // if ($alumni && Hash::check($request->password, $alumni->password)) {
+        //     Session::put('id', $alumni->alumni_id);
+        //     Session::put('level', 'Alumni');
+        //     Session::put('nama', $alumni->nama);
 
-            return redirect('/alumni');
-        }
+        //     return redirect('/alumni');
+        // }
 
         // Kalau gagal semua
         return back()->withErrors(['username' => 'Username/NIM atau password salah!'])->withInput();

@@ -12,10 +12,5 @@ class TokenAlumni extends Model
     protected $table = 'token_alumni';
     protected $primaryKey = 'token_alumni_id';
 
-    protected $fillable = [
-        'token',
-        'alumni_id',
-        'expired_at',
-        'used_at',
-    ];
+    protected $guarded = [];
 }

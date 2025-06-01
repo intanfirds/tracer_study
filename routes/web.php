@@ -6,28 +6,22 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SurveyKepuasanController;
 use App\Http\Controllers\TokenAlumniController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Session;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm']);
+Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm'])->name('request-token-alumni');
 Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);
+
+Route::get('alumni/cek-token-alumni', function () {
+    return view('alumni.cek_token_alumni');
+});
+
+Route::post('/verifikasi-token-alumni', [AlumniController::class, 'verifikasiToken'])->name('verifikasi.token');
 
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-
 
 Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
@@ -58,16 +52,5 @@ Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getIn
 Route::get('/admin/export_belum_survey', [AlumniController::class, 'export_belum_survey']);
 Route::get('/survey/export-belum-isi', [SurveyKepuasanController::class, 'exportBelumIsiExcel'])->name('survey.export.belum_isi');
 
-
-
-
-Route::middleware(['ceklevel:Alumni'])->group(function () {
-    Route::get('/alumni', [AlumniController::class, 'index'])->name('alumni.index');
-    Route::get('/alumni/logout', [AuthController::class, 'logout'])->name('alumni.logout'); //proses logout
-    Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
-    // Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
-    Route::get('/alumni/profile', [AlumniController::class, 'profile'])->name('alumni.profile');
-});
-
-Route::resource('alumni', \App\Http\Controllers\AlumniController::class);
-
+Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
+Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');

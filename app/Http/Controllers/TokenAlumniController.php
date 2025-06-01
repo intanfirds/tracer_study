@@ -11,7 +11,7 @@ class TokenAlumniController extends Controller
 {
     public function showForm()
     {
-        return view('auth.request-token-alumni');
+        return view('alumni.request-token-alumni');
     }
 
     public function requestToken(Request $request)
@@ -37,17 +37,17 @@ class TokenAlumniController extends Controller
 
         // Simpan token dengan alumni_id yang valid
         TokenAlumni::create([
-            'alumni_id' => $alumni->id,  // wajib diisi supaya tidak null
+            'alumni_id' => $alumni->alumni_id,  // wajib diisi supaya tidak null
             'email' => $email,
             'token' => $token,
-            'expires_at' => Carbon::now()->addMinutes(30),
+            'expires_at' => Carbon::now()->addMonths(1),
         ]);
 
-        $link = url('/login-by-token?token=' . $token);
+        // $link = url('/login-by-token?token=' . $token);
 
         return response()->json([
             'message' => 'Token berhasil dibuat, cek email kamu!',
-            'link' => $link,
+            'token' => $token,
         ]);
     }
 }

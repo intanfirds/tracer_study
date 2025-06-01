@@ -224,7 +224,7 @@
             <p class="lead mb-4">
                 Umpan balik Anda sangat berharga dalam membentuk masa depan pendidikan Polinema.
             </p>
-            <a href="{{ url('/alumni/index') }}" class="btn btn-primary btn-lg px-4">
+            <a href="{{ url('/request-token-alumni') }}" class="btn btn-primary btn-lg px-4">
                 <i class="bi bi-pencil-square me-2"></i>Isi Data
             </a>
         </div>
