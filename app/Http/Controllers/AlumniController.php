@@ -12,26 +12,16 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\TokenInstansi;
 use Carbon\Carbon;
-use Illuminate\Http\Request; 
+use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class AlumniController extends Controller
 {
-    // Menampilkan daftar alumni
-    // public function index()
-    // {
-    //     $alumnis = Alumni::whereHas('detailProfesi')
-    //         ->with(['prodi', 'detailProfesi'])
-    //         ->get();
-
-    //     return view('alumni.index', compact('alumnis'));
-    // }
-
     // Menampilkan form pengisian data alumni
     public function form(Request $request)
     {
-        $token = $request->query('token'); // ambil dari URL ?token=xxxx
+        $token = $request->query('token');
 
         $tokenData = DB::table('token_alumni')
             ->where('token', $token)
@@ -48,7 +38,6 @@ class AlumniController extends Controller
             return redirect('request-token-alumni')->with('error', 'Data alumni tidak ditemukan.');
         }
 
-        // Optional: simpan alumni_id di session agar bisa dipakai di route lain
         session(['id' => $alumni->alumni_id]);
 
         $prodis = ProgramStudi::all();
@@ -57,34 +46,6 @@ class AlumniController extends Controller
         $jenis_instansis = JenisInstansi::all();
 
         return view('alumni.form', compact('alumni', 'prodis', 'detailProfesiAlumni', 'kategoris', 'jenis_instansis'));
-    }
-
-    public function requestToken(Request $request)
-    {
-        $request->validate([
-            'instansi_id' => 'required|exists:instansi,instansi_id',
-        ]);
-
-        $instansis = Instansi::find($request->instansi_id);
-
-        // Buat token random 12 digit
-        $token = '';
-        for ($i = 0; $i < 12; $i++) {
-            $token .= rand(0, 9);
-        }
-
-        // Simpan token ke tabel token_instansi
-        TokenInstansi::create([
-            'instansi_id' => $instansis->instansi_id,
-            'email'       => $instansis->email_atasan, // tetap disimpan di DB
-            'token'       => $token,
-            'expires_at'  => Carbon::now()->addMonth(),
-        ]);
-
-        return response()->json([
-            'message' => 'Token berhasil dibuat!',
-            'token'   => $token,
-        ]);
     }
 
     // Menyimpan data form
@@ -112,12 +73,20 @@ class AlumniController extends Controller
         ]);
 
         if ($validator->fails()) {
+            // Kalau AJAX, lebih baik return JSON error
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
         DB::beginTransaction();
         try {
             $nimUpper = strtoupper($request->nim);
+
             // Simpan data alumni
             $alumni = Alumni::updateOrCreate(
                 ['NIM' => $nimUpper],
@@ -143,7 +112,20 @@ class AlumniController extends Controller
                 'jabatan' => $request->jabatan,
                 'no_hp_atasan' => $request->no_hp_atasan,
                 'email_atasan' => $request->email_atasan,
-                'level_id' => 3 // asumsi default level_id instansi
+                'level_id' => 3
+            ]);
+
+            // Buat token random 12 digit
+            $token = '';
+            for ($i = 0; $i < 12; $i++) {
+                $token .= rand(0, 9);
+            }
+
+            // Simpan token ke tabel token_instansi
+            TokenInstansi::create([
+                'instansi_id' => $instansi->instansi_id,
+                'token'       => $token,
+                'expired_at'  => Carbon::now()->addMonth(),
             ]);
 
             // Hitung masa tunggu
@@ -164,20 +146,27 @@ class AlumniController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('alumni.profile')->with('success', 'Data berhasil disimpan!');
+
+            // Kembalikan response JSON untuk dipakai frontend (emailjs)
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'email_atasan' => $request->email_atasan,
+                'nama_atasan' => $request->nama_atasan,
+                'nama_alumni' => $request->nama,
+                'profesi' => $request->profesi,
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
-
-    // public function profile()
-    // {
-    //     // dd(session()->all());
-    //     $id = session('id'); // Atau bisa juga pakai Auth::user()->id kalau login pakai auth
-    //     $alumni = Alumni::findOrFail($id);
-    //     return view('alumni.profile', compact('alumni'));
-    // }
 
     public function showImportForm()
     {
@@ -296,61 +285,61 @@ class AlumniController extends Controller
     }
 
     public function export_belum_survey()
-{
-    // Ambil data alumni yang ingin diekspor (misalnya kriteria khusus)
-    $alumni = Alumni::select('NIM', 'nama', 'prodi_id', 'no_hp', 'email')
-        ->orderBy('nama')
-        ->with('prodi')
-        ->get();
+    {
+        // Ambil data alumni yang ingin diekspor (misalnya kriteria khusus)
+        $alumni = Alumni::select('NIM', 'nama', 'prodi_id', 'no_hp', 'email')
+            ->orderBy('nama')
+            ->with('prodi')
+            ->get();
 
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-    // Header kolom
-    $sheet->setCellValue('A1', 'No');
-    $sheet->setCellValue('B1', 'NIM');
-    $sheet->setCellValue('C1', 'Nama');
-    $sheet->setCellValue('D1', 'Program Studi');
-    $sheet->setCellValue('E1', 'No HP');
-    $sheet->setCellValue('F1', 'Email');
+        // Header kolom
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'NIM');
+        $sheet->setCellValue('C1', 'Nama');
+        $sheet->setCellValue('D1', 'Program Studi');
+        $sheet->setCellValue('E1', 'No HP');
+        $sheet->setCellValue('F1', 'Email');
 
-    $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
 
-    // Isi data
-    $no = 1;
-    $baris = 2;
-    foreach ($alumni as $value) {
-        $sheet->setCellValue('A' . $baris, $no);
-        $sheet->setCellValue('B' . $baris, $value->NIM);
-        $sheet->setCellValue('C' . $baris, $value->nama);
-        $sheet->setCellValue('D' . $baris, $value->prodi->nama_prodi ?? '-');
-        $sheet->setCellValue('E' . $baris, $value->no_hp);
-        $sheet->setCellValue('F' . $baris, $value->email);
-        $baris++;
-        $no++;
+        // Isi data
+        $no = 1;
+        $baris = 2;
+        foreach ($alumni as $value) {
+            $sheet->setCellValue('A' . $baris, $no);
+            $sheet->setCellValue('B' . $baris, $value->NIM);
+            $sheet->setCellValue('C' . $baris, $value->nama);
+            $sheet->setCellValue('D' . $baris, $value->prodi->nama_prodi ?? '-');
+            $sheet->setCellValue('E' . $baris, $value->no_hp);
+            $sheet->setCellValue('F' . $baris, $value->email);
+            $baris++;
+            $no++;
+        }
+
+        foreach (range('A', 'F') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $sheet->setTitle('Alumni Belum Survey');
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Alumni_Belum_Survey_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
     }
-
-    foreach (range('A', 'F') as $columnID) {
-        $sheet->getColumnDimension($columnID)->setAutoSize(true);
-    }
-
-    $sheet->setTitle('Alumni Belum Survey');
-
-    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-    $filename = 'Alumni_Belum_Survey_' . date('Y-m-d_H-i-s') . '.xlsx';
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $filename . '"');
-    header('Cache-Control: max-age=0');
-    header('Cache-Control: max-age=1');
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-    header('Cache-Control: cache, must-revalidate');
-    header('Pragma: public');
-
-    $writer->save('php://output');
-    exit;
-}
 
     public function daftarAlumni()
     {

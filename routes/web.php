@@ -11,7 +11,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm']);
+Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm'])->name('request-token-alumni');
 Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);
 
 Route::get('alumni/cek-token-alumni', function () {
@@ -53,3 +53,4 @@ Route::get('/admin/export_belum_survey', [AlumniController::class, 'export_belum
 Route::get('/survey/export-belum-isi', [SurveyKepuasanController::class, 'exportBelumIsiExcel'])->name('survey.export.belum_isi');
 
 Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
+Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');

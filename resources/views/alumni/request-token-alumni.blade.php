@@ -184,7 +184,7 @@
                         emailjs.send('service_n8pyris', 'template_khtm20x', {
                                 to_email: email,
                                 token: data.token,
-                                login_link: `{{ url('/request-token-alumni') }}?email=${encodeURIComponent(email)}&token=${data.token}`,
+                                login_link: `{{ url('/alumni/form') }}?token=${data.token}`,
                             })
                             .then(() => {
                                 statusMessage.textContent += ' Email berhasil dikirim!';
