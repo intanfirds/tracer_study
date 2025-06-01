@@ -130,7 +130,7 @@ class SurveyKepuasanController extends Controller
     }
 
 
- public function export_excel()
+public function export_excel()
 {
     $data = SurveyKepuasanLulusan::with(['alumni.prodi']) // pastikan relasi alumni dan prodi benar
         ->orderBy('tanggal', 'desc')
@@ -139,26 +139,38 @@ class SurveyKepuasanController extends Controller
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
 
-    // Header
-    $sheet->setCellValue('A1', 'No');
-    $sheet->setCellValue('B1', 'NIM');
-    $sheet->setCellValue('C1', 'Nama');
-    $sheet->setCellValue('D1', 'Program Studi');
-    $sheet->setCellValue('E1', 'Tanggal');
-    $sheet->setCellValue('F1', 'Kerjasama Tim');
-    $sheet->setCellValue('G1', 'Keahlian IT');
-    $sheet->setCellValue('H1', 'Bahasa Asing');
-    $sheet->setCellValue('I1', 'Komunikasi');
-    $sheet->setCellValue('J1', 'Pengembangan Diri');
-    $sheet->setCellValue('K1', 'Kepemimpinan');
-    $sheet->setCellValue('L1', 'Etos Kerja');
-    $sheet->setCellValue('M1', 'Saran Kurikulum');
-    $sheet->setCellValue('N1', 'Kemampuan Tidak Terpenuhi');
-    $sheet->setCellValue('O1', 'Status');
+    // Judul besar di atas
+    $sheet->setCellValue('A1', 'Export Survey Lulusan');
+    // Membuat font jadi besar dan tebal
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+    // Menggabungkan kolom A sampai O untuk judul supaya center lebih bagus
+    $sheet->mergeCells('A1:O1');
+    // Center alignment horizontal dan vertical
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('A1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
-    $sheet->getStyle('A1:O1')->getFont()->setBold(true);
+    // Header mulai di baris 3 (biar ada jarak dengan judul)
+    $headerRow = 3;
+    $sheet->setCellValue('A' . $headerRow, 'No');
+    $sheet->setCellValue('B' . $headerRow, 'NIM');
+    $sheet->setCellValue('C' . $headerRow, 'Nama');
+    $sheet->setCellValue('D' . $headerRow, 'Program Studi');
+    $sheet->setCellValue('E' . $headerRow, 'Tanggal');
+    $sheet->setCellValue('F' . $headerRow, 'Kerjasama Tim');
+    $sheet->setCellValue('G' . $headerRow, 'Keahlian IT');
+    $sheet->setCellValue('H' . $headerRow, 'Bahasa Asing');
+    $sheet->setCellValue('I' . $headerRow, 'Komunikasi');
+    $sheet->setCellValue('J' . $headerRow, 'Pengembangan Diri');
+    $sheet->setCellValue('K' . $headerRow, 'Kepemimpinan');
+    $sheet->setCellValue('L' . $headerRow, 'Etos Kerja');
+    $sheet->setCellValue('M' . $headerRow, 'Saran Kurikulum');
+    $sheet->setCellValue('N' . $headerRow, 'Kemampuan Tidak Terpenuhi');
+    $sheet->setCellValue('O' . $headerRow, 'Status');
 
-    $baris = 2;
+    $sheet->getStyle('A' . $headerRow . ':O' . $headerRow)->getFont()->setBold(true);
+
+    // Data mulai dari baris berikutnya setelah header
+    $baris = $headerRow + 1;
     $no = 1;
     foreach ($data as $item) {
         $sheet->setCellValue('A' . $baris, $no++);
@@ -194,6 +206,64 @@ class SurveyKepuasanController extends Controller
     $writer->save('php://output');
     exit;
 }
+public function exportBelumIsiExcel()
+{
+    // Ambil data instansi yang belum punya survey dan eager load alumni
+    $data = Instansi::whereNotIn('instansi_id', function($query) {
+        $query->select('instansi_id')->from('survey_kepuasan_lulusans');
+    })->with('alumni')->get();
+
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Judul
+    $sheet->setCellValue('A1', 'Atasan yang Belum Mengisi Survey Kepuasan');
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+    $sheet->mergeCells('A1:F1'); // ada tambahan kolom alumni
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+    // Header
+    $headerRow = 3;
+    $sheet->setCellValue('A'.$headerRow, 'No');
+    $sheet->setCellValue('B'.$headerRow, 'Nama Instansi');
+    $sheet->setCellValue('C'.$headerRow, 'Nama Atasan');
+    $sheet->setCellValue('D'.$headerRow, 'Jabatan');
+    $sheet->setCellValue('E'.$headerRow, 'Lokasi Instansi');
+    $sheet->setCellValue('F'.$headerRow, 'Nama Alumni');
+
+    $sheet->getStyle('A'.$headerRow.':F'.$headerRow)->getFont()->setBold(true);
+
+    // Data
+    $row = $headerRow + 1;
+    $no = 1;
+    foreach ($data as $item) {
+        $sheet->setCellValue('A'.$row, $no++);
+        $sheet->setCellValue('B'.$row, $item->nama_instansi);
+        $sheet->setCellValue('C'.$row, $item->nama_atasan);
+        $sheet->setCellValue('D'.$row, $item->jabatan);
+        $sheet->setCellValue('E'.$row, $item->lokasi_instansi);
+
+        $namaAlumni = $item->alumni ? $item->alumni->nama : '-';
+        $sheet->setCellValue('F'.$row, $namaAlumni);
+
+        $row++;
+    }
+
+    foreach (range('A', 'F') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    $sheet->setTitle('Atasan Belum Isi Survey');
+
+    $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $filename = 'Atasan_Belum_Mengisi_Survey_' . date('Ymd_His') . '.xlsx';
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit;
+}
 
 
     public function getInstansi($alumni_id)
@@ -207,6 +277,11 @@ class SurveyKepuasanController extends Controller
             'lokasi_instansi' => $alumni->instansi->lokasi_instansi ?? '',
         ]);
     }
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class, 'alumni_id');
+    }
+
 
     public function token()
     {

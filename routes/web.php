@@ -33,6 +33,7 @@ Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin/import', [AlumniController::class, 'showImportForm'])->name('admin.import.form');
     Route::post('/admin/import', [AlumniController::class, 'import'])->name('admin.import');
     Route::get('/admin/laporan', [AdminController::class, 'laporan']);
+    Route::get('/admin/filterAlumni', [AdminController::class, 'filterAlumni']);
 
     Route::get('/admin/detail/{id}', [AdminController::class, 'show'])->name('admin.detail');
     Route::get('/admin/edit/{id}', [AdminController::class, 'edit'])->name('admin.edit');
@@ -48,5 +49,7 @@ Route::get('/survey/index', [SurveyKepuasanController::class, 'create'])->name('
 Route::post('/survey/index', [SurveyKepuasanController::class, 'store'])->name('survey.store');
 Route::get('/admin/export_survey', [SurveyKepuasanController::class, 'export_excel']);
 Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getInstansi']);
+Route::get('/admin/export_belum_survey', [AlumniController::class, 'export_belum_survey']);
+Route::get('/survey/export-belum-isi', [SurveyKepuasanController::class, 'exportBelumIsiExcel'])->name('survey.export.belum_isi');
 
 Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
