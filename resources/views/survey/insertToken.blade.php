@@ -55,12 +55,56 @@
             margin: 0.5rem 0;
         }
 
+        /* Add to existing styles */
+        .modal-content {
+            border-radius: 15px;
+        }
+        
+        .modal-header {
+            background: #354764;
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        #requestNewTokenForm .form-control {
+            text-align: left;
+            background-color: #f8f9fa;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa !important;
+            border: 1px solid #ced4da !important;
+            border-right: none !important;
+            padding: 0.75rem 0.5rem 0.75rem 1rem !important;
+        }
+
+        .input-group-text i {
+            font-size: 1rem;
+            width: auto;
+            opacity: 0.8;
+        }
+
+        #oldTokenInput {
+            border-left: none !important;
+            padding-left: 0.5rem !important;
+        }
+
         @media (max-width: 576px) {
             .form-wrapper { margin: 1rem; }
             .form-title { font-size: 1.2rem; }
             .subtitle { font-size: 1rem; }
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -106,5 +150,140 @@
             </form>
         </div>
     </div>
+
+    <div class="modal fade" id="requestNewTokenModal" tabindex="-1" aria-labelledby="requestNewTokenModalLabel" aria-hidden="true">
+        @csrf
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="requestNewTokenForm" action="{{ route('survey.requestNewToken') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="instansi_id" value="{{ session('instansi_id') }}">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title" id="requestNewTokenModalLabel">
+                            <i class="fas fa-key me-2"></i>Permintaan Token Baru
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body px-4 py-4">
+                        <div class="text-center mb-4">
+                            <div class="token-expired-icon mb-3">
+                                <i class="fas fa-clock fa-3x text-warning"></i>
+                            </div>
+                            <h6 class="fw-bold">Token Anda Telah Kadaluarsa</h6>
+                            <p class="text-muted small">Silakan gunakan token lama Anda untuk mengajukan token baru</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Token Lama</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                    class="form-control border-start-0 ps-2" 
+                                    id="oldTokenInput" 
+                                    name="old_token"
+                                    value="{{ session('old_token') }}"
+                                    readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Kirim Permintaan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    @if(session()->has('token_status') && session('token_status') == 'expired')
+        let modal = new bootstrap.Modal(document.getElementById('requestNewTokenModal'));
+        modal.show();
+        // Isi old token kalau ada
+        @if(session()->has('old_token'))
+            document.getElementById('oldTokenInput').value = '{{ session('old_token') }}';
+        @endif
+    @endif
+});
+</script>
+<script>
+$(document).ready(function() {
+    // Initialize EmailJS
+    emailjs.init("fHVyExSnS3Edg1P2l");
+
+    // Debug log to check if email data exists
+    @if(session()->has('email_data'))
+        console.log('Email data found:', @json(session('email_data')));
+    @endif
+
+    // Check if we have email data and should send email
+    @if(session()->has('email_data') && session('email_data')['should_send_email'])
+        const emailData = @json(session('email_data'));
+        console.log('Preparing to send email with data:', emailData);
+        
+        // Prepare email parameters
+        const emailParams = {
+            to_email: emailData.email_atasan,
+            to_name: emailData.nama_atasan,
+            alumni_name: emailData.nama,
+            alumni_profesi: emailData.profesi,
+            token: emailData.new_token,
+            message: `Token Anda: ${emailData.new_token}\n\nCatatan: Mohon simpan token ini dengan baik. Token ini hanya dapat digunakan sekali untuk mengisi survei.`,
+            survey_link: `{{ url('/survey/index') }}?token=${emailData.new_token}`,
+        };
+
+        console.log('Sending email with params:', emailParams);
+
+        // Send email automatically
+        emailjs.send('service_n8pyris', 'template_el4150l', emailParams)
+            .then(function(response) {
+                console.log('Email sent successfully:', response);
+                
+                // Create success alert without token information
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success py-2';
+                alertDiv.innerHTML = `
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-check-circle me-2 mt-1"></i>
+                        <div>
+                            <div>Token baru telah dikirim ke email ${emailData.email_atasan}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Insert alert before the form
+                const formWrapper = document.querySelector('.form-wrapper');
+                const existingForm = formWrapper.querySelector('form');
+                formWrapper.insertBefore(alertDiv, existingForm);
+
+                // Hide modal if it's open
+                const modal = bootstrap.Modal.getInstance(document.getElementById('requestNewTokenModal'));
+                if (modal) {
+                    modal.hide();
+                }
+            })
+            .catch(function(error) {
+                console.error('Failed to send email:', error);
+                
+                // Create error alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger py-2';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Gagal mengirim email token baru. Error: ${error.text}
+                `;
+                
+                // Insert alert before the form
+                const formWrapper = document.querySelector('.form-wrapper');
+                const existingForm = formWrapper.querySelector('form');
+                formWrapper.insertBefore(alertDiv, existingForm);
+            });
+    @endif
+});
+</script>
+<!-- Keep Bootstrap JS at the end of body -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -51,6 +51,7 @@ Route::get('/admin/export_survey', [SurveyKepuasanController::class, 'export_exc
 Route::get('/get-instansi/{alumni_id}', [SurveyKepuasanController::class, 'getInstansi']);
 Route::get('/admin/export_belum_survey', [AlumniController::class, 'export_belum_survey']);
 Route::get('/survey/export-belum-isi', [SurveyKepuasanController::class, 'exportBelumIsiExcel'])->name('survey.export.belum_isi');
+Route::post('/survey/request-new-token', [SurveyKepuasanController::class, 'requestNewToken'])->name('survey.requestNewToken');
 
 Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
 Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');

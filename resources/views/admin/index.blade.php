@@ -130,9 +130,9 @@ function drawProfesiCharts() {
             legend: { position: 'labeled' },
             pieSliceText: 'value',
             sliceVisibilityThreshold: 0,
-            colors: ['#370617', '#6A040F', '#9D0208', '#D00000','#DC2F02', '#E85D04','#F48C06','#FAA307','#FFBA08'],
+            colors: ['0466c8','0353a4',"023e7d","002855","001845","001233","33415c","5c677d","7d8597","a5b1c2","c8d0e0","e0e6f2"],
             chartArea: {top: 10, bottom: 20, left: 10, right: 10, width: '100%', height: '80%'},
-            titlePosition: 'in',
+            titlePosition: 'in', 
             titleTextStyle: { fontSize: 16, bold: true }
         };
 
@@ -143,7 +143,7 @@ function drawProfesiCharts() {
 
 function drawSurveyCharts() {
     const labels = ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'];
-    const colors = ['#28a745', '#17a2b8', '#ffc107', '#dc3545'];
+    const colors = ['0466c8','0353a4',"7d8597","a5b1c2"];
 
     surveyChartsData.forEach(chart => {
         const chartId = 'survey_chart_' + chart.id;

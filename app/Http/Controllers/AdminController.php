@@ -87,7 +87,6 @@ class AdminController extends Controller
         }
     }
 
-    // Contoh fungsi fetch data tabel, sesuaikan dengan kebutuhan aslinya
     protected function fetchTableData($prodiId, $tahunLulus)
     {
         $query = DB::table('alumnis')
@@ -123,8 +122,13 @@ class AdminController extends Controller
         // PROFESI
         $profesiQuery = DB::table('detail_profesi_alumnis')
             ->join('alumnis', 'detail_profesi_alumnis.alumni_id', '=', 'alumnis.alumni_id')
-            ->select('detail_profesi_alumnis.profesi', DB::raw('count(*) as total'))
-            ->groupBy('detail_profesi_alumnis.profesi');
+            ->select(DB::raw("CASE 
+                WHEN TRIM(detail_profesi_alumnis.profesi) IS NULL OR TRIM(detail_profesi_alumnis.profesi) = '' 
+                THEN 'belum bekerja'
+                ELSE LOWER(detail_profesi_alumnis.profesi)
+                END as profesi_normalized"), 
+                DB::raw('count(*) as total'))
+            ->groupBy('profesi_normalized');
 
         if ($prodiId) {
             $profesiQuery->where('alumnis.prodi_id', $prodiId);
@@ -135,13 +139,34 @@ class AdminController extends Controller
 
         $profesiData = $profesiQuery->get();
 
-        
-        // Format data for first chart
+        // Urutkan dari yang terbesar
+        $sortedProfesi = $profesiData->sortByDesc('total')->values();
+
+        // Ambil 10 teratas
+        $top10 = $sortedProfesi->take(10);
+
+        // Sisanya dijumlahkan
+        $othersTotal = $sortedProfesi->skip(10)->sum('total');
+
+        // Siapkan labels dan data
+        $labels = $top10->pluck('profesi_normalized')->map(function($item) {
+            return ucwords($item); // Biar tampil capital di chart
+        })->toArray();
+
+        $data = $top10->pluck('total')->toArray();
+
+        // Kalau ada sisa, tambahkan 'Lainnya'
+        if ($othersTotal > 0) {
+            $labels[] = 'Lainnya';
+            $data[] = $othersTotal;
+        }
+
+        // Format data untuk chart
         $charts = [
             [
                 'title' => 'Sebaran Jenis Profesi',
-                'labels' => $profesiData->pluck('profesi')->toArray(),
-                'data' => $profesiData->pluck('total')->toArray()
+                'labels' => $labels,
+                'data' => $data
             ]
         ];
 

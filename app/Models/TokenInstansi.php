@@ -13,4 +13,12 @@ class TokenInstansi extends Model
     protected $primaryKey = 'token_instansi_id';
 
     protected $guarded = [];
+
+    protected $fillable = [
+        'token',
+        'instansi_id',
+        'expired_at',
+        'is_used'
+    ];
+        
 }

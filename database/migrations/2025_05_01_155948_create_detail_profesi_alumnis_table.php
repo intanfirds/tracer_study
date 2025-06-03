@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreign('alumni_id')->references('alumni_id')->on('alumnis');
             $table->unsignedBigInteger('kategori_id');
             $table->foreign('kategori_id')->references('kategori_id')->on('kategori_profesis');
-            $table->date('tanggal_pertama_kerja');
-            $table->integer('masa_tunggu');
-            $table->date('tanggal_mulai_kerja_instansi_saat_ini');
-            $table->string('profesi');
+            $table->date('tanggal_pertama_kerja')->nullable();
+            $table->integer('masa_tunggu')->nullable();
+            $table->date('tanggal_mulai_kerja_instansi_saat_ini')->nullable();
+            $table->string('profesi')->nullable();
             $table->date('tanggal_pengisian');
             $table->string('status_pengisian');
             $table->timestamps();
