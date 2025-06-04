@@ -129,86 +129,83 @@ class SurveyKepuasanController extends Controller
         }
     }
 
-
 public function export_excel()
 {
-    $data = SurveyKepuasanLulusan::with(['alumni.prodi']) // pastikan relasi alumni dan prodi benar
+    $data = SurveyKepuasanLulusan::with(['alumni.prodi', 'instansi']) // tambahkan relasi instansi
         ->orderBy('tanggal', 'desc')
         ->get();
 
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
 
-    // Judul besar di atas
-    $sheet->setCellValue('A1', 'Export Survey Lulusan');
-    // Membuat font jadi besar dan tebal
+    // Judul
+    $sheet->setCellValue('A1', 'Export Survey Kepuasan Lulusan');
     $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-    // Menggabungkan kolom A sampai O untuk judul supaya center lebih bagus
-    $sheet->mergeCells('A1:O1');
-    // Center alignment horizontal dan vertical
+    $sheet->mergeCells('A1:P1');
     $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
     $sheet->getStyle('A1')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
-    // Header mulai di baris 3 (biar ada jarak dengan judul)
+    // Header
     $headerRow = 3;
-    $sheet->setCellValue('A' . $headerRow, 'No');
-    $sheet->setCellValue('B' . $headerRow, 'NIM');
-    $sheet->setCellValue('C' . $headerRow, 'Nama');
-    $sheet->setCellValue('D' . $headerRow, 'Program Studi');
-    $sheet->setCellValue('E' . $headerRow, 'Tanggal');
-    $sheet->setCellValue('F' . $headerRow, 'Kerjasama Tim');
-    $sheet->setCellValue('G' . $headerRow, 'Keahlian IT');
-    $sheet->setCellValue('H' . $headerRow, 'Bahasa Asing');
-    $sheet->setCellValue('I' . $headerRow, 'Komunikasi');
-    $sheet->setCellValue('J' . $headerRow, 'Pengembangan Diri');
-    $sheet->setCellValue('K' . $headerRow, 'Kepemimpinan');
-    $sheet->setCellValue('L' . $headerRow, 'Etos Kerja');
-    $sheet->setCellValue('M' . $headerRow, 'Saran Kurikulum');
-    $sheet->setCellValue('N' . $headerRow, 'Kemampuan Tidak Terpenuhi');
-    $sheet->setCellValue('O' . $headerRow, 'Status');
+    $headers = [
+        'Nama', 'Instansi', 'Jabatan', 'Email', 'Nama Alumni', 'Program Studi', 'Tahun Lulus',
+        'Kerjasama Tim', 'Keahlian di bidang TI', 'Kemampuan berbahasa asing', 'Kemampuan berkomunikasi',
+        'Pengembangan diri', 'Kepemimpinan', 'Etos Kerja',
+        'Kompetensi yang dibutuhkan tapi belum dapat dipenuhi', 'Saran untuk kurikulum program studi'
+    ];
 
-    $sheet->getStyle('A' . $headerRow . ':O' . $headerRow)->getFont()->setBold(true);
-
-    // Data mulai dari baris berikutnya setelah header
-    $baris = $headerRow + 1;
-    $no = 1;
-    foreach ($data as $item) {
-        $sheet->setCellValue('A' . $baris, $no++);
-        $sheet->setCellValue('B' . $baris, $item->alumni->NIM ?? '');
-        $sheet->setCellValue('C' . $baris, $item->alumni->nama ?? '');
-        $sheet->setCellValue('D' . $baris, $item->alumni->prodi->nama_prodi ?? '');
-        $sheet->setCellValue('E' . $baris, $item->tanggal);
-        $sheet->setCellValue('F' . $baris, $item->kerjasama_tim);
-        $sheet->setCellValue('G' . $baris, $item->keahlian_bidang_it);
-        $sheet->setCellValue('H' . $baris, $item->kemampuan_berbahasa_asing);
-        $sheet->setCellValue('I' . $baris, $item->kemampuan_berkomunikasi);
-        $sheet->setCellValue('J' . $baris, $item->pengembangan_diri);
-        $sheet->setCellValue('K' . $baris, $item->kepemimpinan);
-        $sheet->setCellValue('L' . $baris, $item->etos_kerja);
-        $sheet->setCellValue('M' . $baris, $item->saran_untuk_kurikulum_prodi);
-        $sheet->setCellValue('N' . $baris, $item->kemampuan_tdk_terpenuhi);
-        $sheet->setCellValue('O' . $baris, $item->status_pengisian);
-        $baris++;
+    $colIndex = 'A';
+    foreach ($headers as $header) {
+        $sheet->setCellValue($colIndex . $headerRow, $header);
+        $colIndex++;
     }
 
-    foreach (range('A', 'O') as $col) {
+    $sheet->getStyle('A' . $headerRow . ':' . chr(ord('A') + count($headers) - 1) . $headerRow)
+        ->getFont()->setBold(true);
+
+    // Data
+    $row = $headerRow + 1;
+    foreach ($data as $item) {
+        $sheet->setCellValue('A' . $row, $item->instansi->nama ?? '-');
+        $sheet->setCellValue('B' . $row, $item->instansi->nama ?? '-');
+        $sheet->setCellValue('C' . $row, $item->instansi->jabatan ?? '-');
+        $sheet->setCellValue('D' . $row, $item->instansi->email ?? '-');
+        $sheet->setCellValue('E' . $row, $item->alumni->nama ?? '-');
+        $sheet->setCellValue('F' . $row, $item->alumni->prodi->nama_prodi ?? '-');
+        $sheet->setCellValue('G' . $row, $item->alumni->tahun_lulus ?? '-');
+        $sheet->setCellValue('H' . $row, $item->kerjasama_tim);
+        $sheet->setCellValue('I' . $row, $item->keahlian_bidang_it);
+        $sheet->setCellValue('J' . $row, $item->kemampuan_berbahasa_asing);
+        $sheet->setCellValue('K' . $row, $item->kemampuan_berkomunikasi);
+        $sheet->setCellValue('L' . $row, $item->pengembangan_diri);
+        $sheet->setCellValue('M' . $row, $item->kepemimpinan);
+        $sheet->setCellValue('N' . $row, $item->etos_kerja);
+        $sheet->setCellValue('O' . $row, $item->kemampuan_tdk_terpenuhi);
+        $sheet->setCellValue('P' . $row, $item->saran_untuk_kurikulum_prodi);
+        $row++;
+    }
+
+    // Auto-size columns
+    foreach (range('A', chr(ord('A') + count($headers) - 1)) as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
-    $sheet->setTitle('Survey Kepuasan Lulusan');
+    $sheet->setTitle('Survey Lulusan');
 
     $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
     $filename = 'Survey_Kepuasan_' . date('Ymd_His') . '.xlsx';
 
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $filename . '"');
+    header("Content-Disposition: attachment; filename=\"$filename\"");
     header('Cache-Control: max-age=0');
     $writer->save('php://output');
     exit;
 }
+
+
 public function exportBelumIsiExcel()
 {
-    // Ambil data instansi yang belum punya survey dan eager load alumni
+    // Ambil instansi yang belum mengisi survey, dengan relasi alumni
     $data = Instansi::whereNotIn('instansi_id', function($query) {
         $query->select('instansi_id')->from('survey_kepuasan_lulusans');
     })->with('alumni')->get();
@@ -219,37 +216,41 @@ public function exportBelumIsiExcel()
     // Judul
     $sheet->setCellValue('A1', 'Atasan yang Belum Mengisi Survey Kepuasan');
     $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-    $sheet->mergeCells('A1:F1'); // ada tambahan kolom alumni
+    $sheet->mergeCells('A1:H1');
     $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
     // Header
     $headerRow = 3;
-    $sheet->setCellValue('A'.$headerRow, 'No');
-    $sheet->setCellValue('B'.$headerRow, 'Nama Instansi');
-    $sheet->setCellValue('C'.$headerRow, 'Nama Atasan');
-    $sheet->setCellValue('D'.$headerRow, 'Jabatan');
-    $sheet->setCellValue('E'.$headerRow, 'Lokasi Instansi');
+    $sheet->setCellValue('A'.$headerRow, 'Nama');
+    $sheet->setCellValue('B'.$headerRow, 'Instansi');
+    $sheet->setCellValue('C'.$headerRow, 'Jabatan');
+    $sheet->setCellValue('D'.$headerRow, 'No HP');
+    $sheet->setCellValue('E'.$headerRow, 'Email');
     $sheet->setCellValue('F'.$headerRow, 'Nama Alumni');
+    $sheet->setCellValue('G'.$headerRow, 'Program Studi');
+    $sheet->setCellValue('H'.$headerRow, 'Tahun Lulus');
 
-    $sheet->getStyle('A'.$headerRow.':F'.$headerRow)->getFont()->setBold(true);
+    $sheet->getStyle('A'.$headerRow.':H'.$headerRow)->getFont()->setBold(true);
 
     // Data
     $row = $headerRow + 1;
-    $no = 1;
     foreach ($data as $item) {
-        $sheet->setCellValue('A'.$row, $no++);
+        $sheet->setCellValue('A'.$row, $item->nama_atasan);
         $sheet->setCellValue('B'.$row, $item->nama_instansi);
-        $sheet->setCellValue('C'.$row, $item->nama_atasan);
-        $sheet->setCellValue('D'.$row, $item->jabatan);
-        $sheet->setCellValue('E'.$row, $item->lokasi_instansi);
+        $sheet->setCellValue('C'.$row, $item->jabatan);
+        $sheet->setCellValue('D'.$row, $item->no_hp_atasan);
+        $sheet->setCellValue('E'.$row, $item->email_atasan);
 
-        $namaAlumni = $item->alumni ? $item->alumni->nama : '-';
-        $sheet->setCellValue('F'.$row, $namaAlumni);
+        $alumni = $item->alumni;
+        $sheet->setCellValue('F'.$row, $alumni ? $alumni->nama : '-');
+        $sheet->setCellValue('G'.$row, $alumni ? $alumni->prodi->nama_prodi: '-');
+        $sheet->setCellValue('H'.$row, $alumni ? $alumni->tahun_lulus : '-');
 
         $row++;
     }
 
-    foreach (range('A', 'F') as $col) {
+    // Auto size kolom
+    foreach (range('A', 'H') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
@@ -264,7 +265,6 @@ public function exportBelumIsiExcel()
     $writer->save('php://output');
     exit;
 }
-
 
     public function getInstansi($alumni_id)
     {
