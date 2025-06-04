@@ -13,6 +13,7 @@
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <!-- CSS Files -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -137,7 +138,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#cta-section">Isi Data</a>
+                        <a class="nav-link" href="#cta-section">Isi Data Alumni</a>
                     </li>
                     <li class="nav-item ms-lg-3">
                         <a class="btn btn-outline-primary" href="{{ url('/login') }}">Masuk Admin</a>
@@ -151,7 +152,7 @@
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6 hero-content">
+                <div class="col-lg-6 hero-content" data-aos="fade-right" data-aos-duration="1000">
                     <h1 class="hero-title">Selamat Datang di Tracer Study</h1>
                     <p class="hero-subtitle">Dari Alumni, Untuk Kemajuan Institusi</p>
                     <p class="mb-4">
@@ -165,7 +166,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-6 d-none d-lg-block">
+                <div class="col-lg-6 d-none d-lg-block" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
                     <img src="{{ asset('images/3.png') }}" alt="Alumni Illustration" class="img-fluid alumni-image">
                 </div>
             </div>
@@ -175,12 +176,12 @@
     <!-- Features Section -->
     <section class="py-5">
         <div class="container">
-            <div class="text-center mb-5">
+            <div class="text-center mb-5" data-aos="fade-up">
                 <h2 class="fw-bold">Mengapa Berpartisipasi dalam Tracer Study?</h2>
                 <p class="text-muted">Umpan balik Anda membantu meningkatkan kualitas pendidikan Polinema</p>
             </div>
             <div class="row g-4">
-                <div class="col-md-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="bi bi-graph-up"></i>
@@ -191,7 +192,7 @@
                         </p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="bi bi-book"></i>
@@ -202,7 +203,7 @@
                         </p>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="bi bi-people"></i>
@@ -219,13 +220,13 @@
 
     <!-- Call to Action -->
     <section class="py-5 bg-white" id="cta-section">
-        <div class="container text-center py-4">
+        <div class="container text-center py-4" data-aos="zoom-in">
             <h2 class="fw-bold mb-4">Siap Berbagi Pengalaman Anda?</h2>
             <p class="lead mb-4">
                 Umpan balik Anda sangat berharga dalam membentuk masa depan pendidikan Polinema.
             </p>
             <a href="{{ url('/request-token-alumni') }}" class="btn btn-primary btn-lg px-4">
-                <i class="bi bi-pencil-square me-2"></i>Isi Data
+                <i class="bi bi-pencil-square me-2"></i>Isi Data Alumni
             </a>
         </div>
     </section>
@@ -271,7 +272,15 @@
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100,
+            easing: 'ease-in-out'
+        });
+
         // Animation for stats counting
         document.addEventListener('DOMContentLoaded', function() {
             const statNumbers = document.querySelectorAll('.stat-number');

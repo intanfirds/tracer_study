@@ -112,7 +112,7 @@ class SurveyKepuasanController extends Controller
             return redirect()->route('survey.token')
             ->with('alert', [
                 'type' => 'success',
-                'message' => 'Terimakasih telah mengirim survey. Survey Anda telah berhasil disimpan dan token telah digunakan.'
+                'message' => 'Terimakasih telah mengirim survey. Survey Anda sangat berarti bagi kemajuan kami.'
             ]);
 
 
@@ -296,16 +296,32 @@ public function exportBelumIsiExcel()
 
         $token = $request->token;
         
-        // Check if token exists and is valid in database
-        $tokenInstansi = TokenInstansi::where('token', $token)
-            ->where('is_used', false)
-            ->first();
+        // First check if token exists in database
+        $tokenInstansi = TokenInstansi::where('token', $token)->first();
 
         if (!$tokenInstansi) {
-            return back()->with('error', 'Token tidak valid atau sudah digunakan. Silakan cek kembali email Anda.');
+            return back()->with('error', 'Token tidak valid. Silakan cek kembali email Anda.');
         }
 
-        // Store token and instansi_id in session
+        // Check if token is used
+        if ($tokenInstansi->is_used) {
+            return back()->with([
+                'error' => 'Token sudah digunakan. Silakan gunakan token yang baru.',
+                'token_status' => 'used'
+            ]);
+        }
+
+        // Check if token is expired
+        if ($tokenInstansi->expired_at && $tokenInstansi->expired_at <= now()) {
+            return back()->with([
+                'error' => 'Token sudah kadaluarsa. Silakan ajukan token baru.',
+                'token_status' => 'expired',
+                'old_token' => $token,
+                'instansi_id' => $tokenInstansi->instansi_id
+            ]);
+        }
+
+        // If token is valid, not used, and not expired
         Session::put('survey_token', $token);
         Session::put('verified_instansi_id', $tokenInstansi->instansi_id);
         Session::put('verified', true);
@@ -314,5 +330,92 @@ public function exportBelumIsiExcel()
             ->with('success', 'Token berhasil diverifikasi');
     }
 
+    public function requestNewToken(Request $request)
+    {
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'old_token' => 'required|string',
+                'instansi_id' => 'required'
+            ]);
+
+            Log::info('Request data:', $request->all());
+
+            // Find the old token record
+            $tokenRecord = TokenInstansi::where('token', $request->old_token)->first();
+
+            if (!$tokenRecord) {
+                Log::warning('Token not found:', ['old_token' => $request->old_token]);
+                return back()->with([
+                    'error' => 'Token lama tidak ditemukan.',
+                    'token_status' => 'error'
+                ]);
+            }
+
+            Log::info('Token record found:', $tokenRecord->toArray());
+
+            // Get instansi data
+            $instansi = Instansi::find($request->instansi_id);
+            $alumni = $instansi ->alumni()->first();
+            $detailProfesi = $alumni->detailProfesi()->first();
+            
+
+            if (!$instansi) {
+                Log::warning('Instansi not found:', ['instansi_id' => $request->instansi_id]);
+                return back()->with([
+                    'error' => 'Data instansi tidak ditemukan.',
+                    'token_status' => 'error'
+                ]);
+            }
+
+            Log::info('Instansi found:', $instansi->toArray());
+
+            // Generate new token
+            $newToken = '';
+            for ($i = 0; $i < 12; $i++) {
+                $newToken .= rand(0, 9);
+            }
+
+            // Create new token
+            $newTokenRecord = TokenInstansi::create([
+                'instansi_id' => $instansi->instansi_id,
+                'token' => $newToken,
+                'expired_at' => now()->addMonth(),
+                'is_used' => false
+            ]);
+
+            Log::info('New token created:', $newTokenRecord->toArray());
+
+            // Return success response
+            return redirect()->route('survey.token')->with([
+                'alert' => [
+                    'type' => 'success',
+                    'message' => 'Token baru berhasil dibuat'
+                ],
+                'email_data' => [
+                    'new_token' => $newToken,
+                    'email_atasan' => $instansi->email_atasan,
+                    'nama_atasan' => $instansi->nama_atasan,
+                    'old_token' => $request->old_token,
+                    'nama' => $alumni->nama ?? 'Alumni Tidak Ditemukan',
+                    'profesi' => $detailProfesi->profesi ?? 'Profesi Tidak Ditemukan',
+                    'should_send_email' => true // Add this flag
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in requestNewToken:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with([
+                'error' => 'Terjadi kesalahan saat memproses token: ' . $e->getMessage(),
+                'token_status' => 'error'
+            ]);
+        }
+    }
 
 }

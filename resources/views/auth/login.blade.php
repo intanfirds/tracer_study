@@ -152,8 +152,8 @@
           <form role="form" action="{{ url('/login') }}" method="POST">
             @csrf
             <div>
-              <label for="username" class="form-label">NAMA / NIM</label>
-              <input type="text" name="username" id="username" class="form-control" placeholder="Masukkan nama atau NIM Anda" aria-label="Nama/NIM" required>
+              <label for="username" class="form-label">USERNAME</label>
+              <input type="text" name="username" id="username" class="form-control" placeholder="Masukkan username Anda" aria-label="Nama/NIM" required>
             </div>
             <div>
               <label for="password" class="form-label">PASSWORD</label>
