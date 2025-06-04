@@ -32,10 +32,24 @@ class AlumniController extends Controller
             return redirect('request-token-alumni')->with('error', 'Token tidak valid atau sudah kadaluarsa.');
         }
 
+        // Update used_at saat token dipakai
+        DB::table('token_alumni')
+            ->where('token_alumni_id', $tokenData->token_alumni_id)
+            ->update(['used_at' => now()]);
+
         $alumni = Alumni::where('email', $tokenData->email)->first();
 
         if (!$alumni) {
             return redirect('request-token-alumni')->with('error', 'Data alumni tidak ditemukan.');
+        }
+
+        // Cek apakah sudah pernah mengisi
+        $sudahIsi = DetailProfesiAlumni::where('alumni_id', $alumni->alumni_id)
+            ->where('status_pengisian', 'Sudah Diisi')
+            ->exists();
+
+        if ($sudahIsi) {
+            return redirect('request-token-alumni')->with('error', 'Anda sudah pernah mengisi form.');
         }
 
         session(['id' => $alumni->alumni_id]);
@@ -346,24 +360,5 @@ class AlumniController extends Controller
         $alumnis = Alumni::with(['prodi', 'detailProfesi'])->get();
 
         return view('admin.daftarAlumni', compact('alumnis'));
-    }
-
-    public function verifikasiToken(Request $request)
-    {
-        $email = $request->email;
-        $token = $request->token;
-
-        $alumni = DB::table('token_alumni')
-            // ->where('email', $email)
-            ->where('token', $token)
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if ($alumni) {
-            // Token valid, bisa redirect ke dashboard alumni
-            return redirect()->route('alumni.form');
-        } else {
-            return back()->with('message', 'Token tidak valid atau sudah kedaluwarsa.');
-        }
     }
 }

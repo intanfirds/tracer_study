@@ -143,7 +143,7 @@
             </div>
         @endif
 
-        <form action="{{ route('verifikasi.token') }}" method="POST">
+        <form action="{{ route('alumni.form') }}" method="GET">
             @csrf
             <input type="text" class="form-control @error('token') is-invalid @enderror" name="token"
                 placeholder="Masukkan token alumni Anda" required autocomplete="off">

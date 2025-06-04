@@ -18,8 +18,6 @@ Route::get('alumni/cek-token-alumni', function () {
     return view('alumni.cek_token_alumni');
 });
 
-Route::post('/verifikasi-token-alumni', [AlumniController::class, 'verifikasiToken'])->name('verifikasi.token');
-
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
