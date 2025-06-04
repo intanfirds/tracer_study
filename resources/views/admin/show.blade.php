@@ -4,9 +4,7 @@
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h3 class="card-title">Detail Alumni</h3>
-        <a href="{{ url('/admin/daftarAlumni') }}" class="btn btn-secondary float-right">
-            <i class="fa fa-arrow-left"></i> Kembali
-        </a>
+        
     </div>
     <div class="card-body">
 
@@ -48,7 +46,7 @@
                     </tr>
                     <tr>
                         <th>Profesi</th>
-                        <td>{{ $alumni->detailProfesi->profesi ?? '-' }}</td>
+                        <td>{{ $alumni->detailProfesi->profesi ?? 'belum bekerja' }}</td>
                     </tr>
                     <tr>
                         <th>Masa Tunggu</th>
@@ -97,6 +95,9 @@
                 @endif
             </div>
         </div>
+        <a href="{{ url('/admin/daftarAlumni') }}" class="btn btn-secondary float-right">
+            <i class="fa fa-arrow-left"></i> Kembali
+        </a>
 
     </div>
 </div>

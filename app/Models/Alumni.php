@@ -54,5 +54,14 @@ class Alumni extends Authenticatable
     return $this->hasOne(Instansi::class, 'alumni_id', 'alumni_id');
     }
 
+    public function getProfesiName(): string
+    {
+        return $this->detailProfesi->profesi;
+    }
+	
 
+    public function survey()
+    {
+        return $this->hasOne(SurveyKepuasanLulusan::class, 'alumni_id', 'alumni_id');
+    }
 }

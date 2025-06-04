@@ -35,7 +35,7 @@
 
             <div class="form-group">
                 <label>Download Template</label><br>
-                <a href="{{ asset('template_alumni.xlsx') }}" class="btn btn-info btn-sm" download>
+                <a href="{{ asset('template_alumni.xlsx') }}" class="btn btn-success btn-sm" download>
                     <i class="fa fa-file-excel"></i> Download Template
                 </a>
             </div>
@@ -49,8 +49,10 @@
             </div>
 
             <div class="form-group">
-                <a href="{{ url('/admin/daftarAlumni') }}" class="btn btn-warning">Kembali</a>
-                <button type="submit" class="btn btn-primary">Import</button>
+                <a href="{{ url('/admin/daftarAlumni') }}" class="btn btn-secondary"> <i class="fa fa-arrow-left"></i> Kembali </a>
+                <button type="submit" class="btn btn-info">
+                     Import <i class="fa fa-download"></i> 
+                </button>
             </div>
         </form>
     </div>

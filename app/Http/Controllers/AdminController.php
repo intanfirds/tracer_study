@@ -327,48 +327,16 @@ class AdminController extends Controller
             ['label' => 'Daftar Alumni', 'url' => null],
         ]);
 
-        $alumni = Alumni::all();
+        $alumni = Alumni::with(['prodi', 'detailProfesi',])->get();
         $prodi = ProgramStudi::all();
+        $detailProfesi = DetailProfesiAlumni::all();
 
-        return view('admin.daftarAlumni', compact('alumni', 'prodi'));
+        return view('admin.daftarAlumni', compact('alumni', 'prodi', 'detailProfesi',));
     }
-
-    // public function daftarAlumni(Request $request)
-    // {
-    //     // Ambil data alumni
-    //     $query = Alumni::select('alumni_id', 'NIM', 'nama', 'no_hp', 'email', 'level_id', 'prodi_id');
-
-    //     // Filter berdasarkan prodi_id jika diberikan
-    //     if ($request->has('prodi_id')) {
-    //         $query->where('prodi_id', $request->level_id);
-    //     }
-
-    //     // Ambil semua data
-    //     $alumni = $query->get();
-
-    //     // Tambahkan kolom index secara manual jika dibutuhkan
-    //     $alumni = $alumni->map(function ($item, $index) {
-    //         $item->index = $index + 1;
-    //         return $item;
-    //     });
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $alumni
-    //     ]);
-
-    //     // // Jika bukan AJAX, kembalikan ke view
-    //     // $page = (object)[
-    //     //     'title' => 'Daftar Alumni'
-    //     // ];
-    //     // $prodi = ProgramStudi::all();
-
-    //     // return view('admin.daftarAlumni', compact('page', 'prodi'));
-    // }
 
     public function daftarAlumni(Request $request)
     {
-        $query = Alumni::with(['level', 'prodi']);
+        $query = Alumni::with(['level', 'prodi', 'detailProfesi', 'instansi']);
 
         if ($request->filled('prodi_id')) {
             $query->where('prodi_id', $request->prodi_id);
@@ -376,14 +344,14 @@ class AdminController extends Controller
 
         $alumni = $query->get();
         $prodi = ProgramStudi::all();
+        $profesi = DetailProfesiAlumni::all();
 
         return view('admin.daftarAlumni', [
             'page' => (object)['title' => 'Daftar Alumni'],
             'alumni' => $alumni,
-            'prodi' => $prodi
+            'prodi' => $prodi,
+            'detailProfesi' => $profesi,
         ]);
-        
-        
     }
 
     public function filterAlumni(Request $request)
