@@ -4,67 +4,59 @@
 <div class="container py-4">
 
   <!-- Header Total Laporan -->
-  <div class="bg-primary text-white rounded p-3 d-flex align-items-center mb-4">
-    <i class="fas fa-file-alt fa-2x me-3"></i>
+  <div class="bg-gradient-primary text-white rounded-3 p-4 d-flex align-items-center shadow-sm mb-5">
+    <i class="fas fa-file-alt fa-2x me-3 opacity-75"></i>
     <div>
-      <small class="d-block">TOTAL LAPORAN</small>
-      <h5 class="mb-0 fw-bold">4 Laporan</h5>
+      <small class="d-block text-uppercase fw-semibold opacity-75">Total Laporan</small>
+      <h4 class="mb-0 fw-bold">4 Laporan</h4>
     </div>
   </div>
 
-  <!-- 2x2 Grid -->
+  <!-- Grid -->
   <div class="row g-4">
-    <!-- Box 1 -->
-    <div class="col-md-6">
-      <div class="bg-white shadow-sm rounded-3 p-3 d-flex flex-column justify-content-between h-100">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-user-graduate fa-2x text-primary me-3"></i>
-          <div>Rekap Hasil Tracer Study Lulusan</div>
-        </div>
-        <a href="{{ url('/admin/export_excel') }}" class="btn btn-outline-primary mt-3">
-          Download <i class="fas fa-download ms-2"></i>
-        </a>
-      </div>
-    </div>
+    <!-- Laporan Box Component -->
+    @php
+      $reports = [
+        [
+          'title' => 'Rekap Hasil Tracer Study Lulusan',
+          'icon' => 'fas fa-user-graduate',
+          'color' => 'primary',
+          'url' => url('/admin/export_excel')
+        ],
+        [
+          'title' => 'Rekap Hasil Survei Kepuasan Pengguna Lulusan',
+          'icon' => 'far fa-smile',
+          'color' => 'success',
+          'url' => url('/admin/export_survey')
+        ],
+        [
+          'title' => 'Rekap Lulusan yang Belum Mengisi Tracer Study',
+          'icon' => 'fas fa-users-slash',
+          'color' => 'danger',
+          'url' => url('/admin/export_belum_survey')
+        ],
+        [
+          'title' => 'Rekap Pengguna Lulusan yang Belum Mengisi Survei Kepuasan',
+          'icon' => 'fas fa-user-times',
+          'color' => 'warning',
+          'url' => route('survey.export.belum_isi')
+        ],
+      ];
+    @endphp
 
-    <!-- Box 2 -->
+    @foreach ($reports as $report)
     <div class="col-md-6">
-      <div class="bg-white shadow-sm rounded-3 p-3 d-flex flex-column justify-content-between h-100">
-        <div class="d-flex align-items-center">
-          <i class="far fa-smile fa-2x text-success me-3"></i>
-          <div>Rekap Hasil Survei Kepuasan Pengguna Lulusan</div>
+      <div class="bg-white shadow-sm rounded-4 p-4 d-flex flex-column justify-content-between h-100 hover-shadow transition">
+        <div class="d-flex align-items-start mb-3">
+          <i class="{{ $report['icon'] }} fa-xl text-{{ $report['color'] }} me-3"></i>
+          <div class="fw-semibold text-dark">{{ $report['title'] }}</div>
         </div>
-        <a href="{{ url('/admin/export_survey') }}" class="btn btn-outline-success mt-3">
-          Download <i class="fas fa-download ms-2"></i>
+        <a href="{{ $report['url'] }}" class="btn btn-sm btn-{{ $report['color'] }} px-4 py-2 rounded-pill mt-auto align-self-start shadow-sm">
+          <i class="fas fa-download me-2"></i>Download
         </a>
       </div>
     </div>
-
-    <!-- Box 3 -->
-    <div class="col-md-6">
-      <div class="bg-white shadow-sm rounded-3 p-3 d-flex flex-column justify-content-between h-100">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-users-slash fa-2x text-danger me-3"></i>
-          <div>Rekap Lulusan yang Belum Mengisi Tracer Study</div>
-        </div>
-        <a href="{{ url('/admin/export_belum_survey') }}" class="btn btn-outline-danger mt-3">
-          Download <i class="fas fa-download ms-2"></i>
-        </a>
-      </div>
-    </div>
-
-    <!-- Box 4 -->
-    <div class="col-md-6">
-      <div class="bg-white shadow-sm rounded-3 p-3 d-flex flex-column justify-content-between h-100">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-user-times fa-2x text-warning me-3"></i>
-          <div>Rekap Pengguna Lulusan yang Belum Mengisi Survei Kepuasan</div>
-        </div>
-        <a href="{{ route('survey.export.belum_isi') }}" class="btn btn-outline-warning mt-3">
-          Download <i class="fas fa-download ms-2"></i>
-        </a>
-      </div>
-    </div>
+    @endforeach
   </div>
 </div>
 @endsection
