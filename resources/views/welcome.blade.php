@@ -863,7 +863,7 @@
                         Mari bersama-sama meningkatkan kualitas almamater kita.
                     </p>
                     <div class="d-flex flex-wrap justify-content-center gap-3">
-                        <a href="{{ url('/request-token-alumni') }}" class="btn btn-light btn-lg px-4 btn-primary-custom">
+                        <a href="{{ url('/cek_token') }}" class="btn btn-light btn-lg px-4 btn-primary-custom">
                             <i class="bi bi-pencil-square me-2"></i>Isi Data Alumni
                         </a>
                         <a href="{{ url('/login') }}" class="btn btn-outline-light btn-lg px-4">
