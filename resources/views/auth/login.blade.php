@@ -165,7 +165,7 @@
           </form>
           
           <div class="text-center mt-3">
-            <a href="#" class="text-muted small">Lupa password?</a>
+            <a href="{{ route('password.request') }}" class="text-muted small">Lupa password?</a>
           </div>
         </div>
       </div>

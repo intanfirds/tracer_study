@@ -23,6 +23,12 @@ Route::post('/verifikasi-token-alumni', [AlumniController::class, 'verifikasiTok
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
+
+Route::get('/lupa-password', [AdminController::class, 'showRequestForm'])->name('password.request');
+Route::post('/lupa-password', [AdminController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [AdminController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [AdminController::class, 'resetPassword'])->name('password.update');
+
 Route::middleware(['ceklevel:Admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout'); //proses logout

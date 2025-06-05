@@ -27,6 +27,12 @@ class AdminSeeder extends Seeder
                 'email' => 'admindua@gmail.com',
                 'password' => Hash::make('admin456'),
             ],
+            [
+                'level_id' => 1,
+                'nama' => 'Admin Tiga',
+                'email' => 'chopperlefox@gmail.com',
+                'password' => Hash::make('admin789'),
+            ],
         ]);
     }
 }
