@@ -18,7 +18,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class AlumniController extends Controller
 {
-    // Menampilkan form pengisian data alumni
     public function form(Request $request)
     {
         $token = $request->query('token');
@@ -29,13 +28,36 @@ class AlumniController extends Controller
             ->first();
 
         if (!$tokenData) {
-            return redirect('request-token-alumni')->with('error', 'Token tidak valid atau sudah kadaluarsa.');
+            return redirect('cek_token')->with('alert', [
+                'type' => 'danger',
+                'message' => 'Token tidak valid atau sudah kadaluarsa.'
+            ]);
         }
+
+        // Update used_at saat token dipakai
+        DB::table('token_alumni')
+            ->where('token_alumni_id', $tokenData->token_alumni_id)
+            ->update(['used_at' => now()]);
 
         $alumni = Alumni::where('email', $tokenData->email)->first();
 
         if (!$alumni) {
-            return redirect('request-token-alumni')->with('error', 'Data alumni tidak ditemukan.');
+            return redirect('cek_token')->with('alert', [
+                'type' => 'danger',
+                'message' => 'Data alumni tidak ditemukan.'
+            ]);
+        }
+
+        // Cek apakah sudah pernah mengisi
+        $sudahIsi = DetailProfesiAlumni::where('alumni_id', $alumni->alumni_id)
+            ->where('status_pengisian', 'Sudah Diisi')
+            ->exists();
+
+        if ($sudahIsi) {
+            return redirect('cek_token')->with('alert', [
+                'type' => 'danger',
+                'message' => 'Anda sudah pernah mengisi form.'
+            ]);
         }
 
         session(['id' => $alumni->alumni_id]);
@@ -48,9 +70,11 @@ class AlumniController extends Controller
         return view('alumni.form', compact('alumni', 'prodis', 'detailProfesiAlumni', 'kategoris', 'jenis_instansis'));
     }
 
-    // Menyimpan data form
     public function store(Request $request)
     {
+        $kategoriBelumBekerja = 3;
+
+        // Validasi dasar dulu
         $validator = Validator::make($request->all(), [
             'prodi_id' => 'required|exists:program_studis,prodi_id',
             'tahun_lulus' => 'required|integer|min:2000|max:' . date('Y'),
@@ -58,32 +82,44 @@ class AlumniController extends Controller
             'nim' => 'required|string',
             'no_hp' => 'required|numeric|digits_between:10,15',
             'email' => 'required|email',
-            'tanggal_pertama_kerja' => 'required|date|after_or_equal:' . $request->tahun_lulus . '-01-01',
-            'tanggal_mulai_kerja' => 'required|date|after_or_equal:' . $request->tanggal_pertama_kerja,
-            'jenis_instansi_id' => 'required|exists:jenis_instansis,jenis_instansi_id',
-            'lokasi_instansi' => 'required|string',
-            'nama_instansi' => 'required|string',
-            'skala' => 'required|string',
             'kategori_id' => 'required|exists:kategori_profesis,kategori_id',
-            'profesi' => 'required|string',
-            'nama_atasan' => 'required|string',
-            'jabatan' => 'required|string',
-            'no_hp_atasan' => 'required|numeric|digits_between:10,15',
-            'email_atasan' => 'required|email',
         ]);
 
+        // Validasi tambahan hanya jika bukan "Belum Bekerja"
+        if ($request->kategori_id != $kategoriBelumBekerja) {
+            $validator->after(function ($validator) use ($request) {
+                $rulesTambahan = [
+                    'tanggal_pertama_kerja' => 'required|date|after_or_equal:' . $request->tahun_lulus . '-01-01',
+                    'tanggal_mulai_kerja' => 'required|date|after_or_equal:' . $request->tanggal_pertama_kerja,
+                    'jenis_instansi_id' => 'required|exists:jenis_instansis,jenis_instansi_id',
+                    'lokasi_instansi' => 'required|string',
+                    'nama_instansi' => 'required|string',
+                    'skala' => 'required|string',
+                    'profesi' => 'required|string',
+                    'nama_atasan' => 'required|string',
+                    'jabatan' => 'required|string',
+                    'no_hp_atasan' => 'required|numeric|digits_between:10,15',
+                    'email_atasan' => 'required|email',
+                ];
+
+                $subValidator = Validator::make($request->all(), $rulesTambahan);
+                if ($subValidator->fails()) {
+                    foreach ($subValidator->errors()->all() as $message) {
+                        $validator->errors()->add('form', $message);
+                    }
+                }
+            });
+        }
+
         if ($validator->fails()) {
-            // Kalau AJAX, lebih baik return JSON error
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         DB::beginTransaction();
+
         try {
             $nimUpper = strtoupper($request->nim);
 
@@ -97,64 +133,79 @@ class AlumniController extends Controller
                     'no_hp' => $request->no_hp,
                     'email' => $request->email,
                     'level_id' => 2,
-                    'password' => bcrypt('123456') // default password
+                    'password' => bcrypt('123456')
                 ]
             );
 
-            // Simpan data instansi
-            $instansi = Instansi::create([
-                'alumni_id' => $alumni->alumni_id,
-                'nama_instansi' => $request->nama_instansi,
-                'jenis_instansi_id' => $request->jenis_instansi_id,
-                'lokasi_instansi' => $request->lokasi_instansi,
-                'skala' => $request->skala,
-                'nama_atasan' => $request->nama_atasan,
-                'jabatan' => $request->jabatan,
-                'no_hp_atasan' => $request->no_hp_atasan,
-                'email_atasan' => $request->email_atasan,
-                'level_id' => 3
-            ]);
+            if ($request->kategori_id != $kategoriBelumBekerja) {
+                // Simpan data instansi
+                $instansi = Instansi::create([
+                    'alumni_id' => $alumni->alumni_id,
+                    'nama_instansi' => $request->nama_instansi,
+                    'jenis_instansi_id' => $request->jenis_instansi_id,
+                    'lokasi_instansi' => $request->lokasi_instansi,
+                    'skala' => $request->skala,
+                    'nama_atasan' => $request->nama_atasan,
+                    'jabatan' => $request->jabatan,
+                    'no_hp_atasan' => $request->no_hp_atasan,
+                    'email_atasan' => $request->email_atasan,
+                    'level_id' => 3
+                ]);
 
-            // Buat token random 12 digit
-            $token = '';
-            for ($i = 0; $i < 12; $i++) {
-                $token .= rand(0, 9);
+                // Buat token random 12 digit
+                $token = '';
+                for ($i = 0; $i < 12; $i++) {
+                    $token .= rand(0, 9);
+                }
+
+                // Simpan token ke tabel token_instansi
+                TokenInstansi::create([
+                    'instansi_id' => $instansi->instansi_id,
+                    'token' => $token,
+                    'expired_at' => Carbon::now()->addMonth(),
+                ]);
+
+                // Hitung masa tunggu
+                $tgl_lulus = Carbon::createFromDate($request->tahun_lulus, 1, 1);
+                $tgl_pertama_kerja = Carbon::parse($request->tanggal_pertama_kerja);
+                $masa_tunggu = $tgl_lulus->diffInMonths($tgl_pertama_kerja);
+
+                // Simpan detail profesi alumni dengan data lengkap
+                DetailProfesiAlumni::create([
+                    'alumni_id' => $alumni->alumni_id,
+                    'kategori_id' => $request->kategori_id,
+                    'profesi' => $request->profesi,
+                    'masa_tunggu' => $masa_tunggu,
+                    'status_pengisian' => 'Sudah Diisi',
+                    'tanggal_pertama_kerja' => $request->tanggal_pertama_kerja,
+                    'tanggal_mulai_kerja_instansi_saat_ini' => $request->tanggal_mulai_kerja,
+                    'tanggal_pengisian' => now(),
+                ]);
+            } else {
+                // Jika belum bekerja, simpan detail profesi dengan nilai null pada profesi dan tanggal kerja
+                DetailProfesiAlumni::create([
+                    'alumni_id' => $alumni->alumni_id,
+                    'kategori_id' => $request->kategori_id,
+                    'profesi' => null,
+                    'masa_tunggu' => null,
+                    'status_pengisian' => 'Sudah Diisi',
+                    'tanggal_pertama_kerja' => null,
+                    'tanggal_mulai_kerja_instansi_saat_ini' => null,
+                    'tanggal_pengisian' => now(),
+                ]);
+                // Token dan instansi tidak dibuat
+                $token = null;
             }
-
-            // Simpan token ke tabel token_instansi
-            TokenInstansi::create([
-                'instansi_id' => $instansi->instansi_id,
-                'token'       => $token,
-                'expired_at'  => Carbon::now()->addMonth(),
-            ]);
-
-            // Hitung masa tunggu
-            $tgl_lulus = Carbon::createFromDate($request->tahun_lulus, 1, 1);
-            $tgl_pertama_kerja = Carbon::parse($request->tanggal_pertama_kerja);
-            $masa_tunggu = $tgl_lulus->diffInMonths($tgl_pertama_kerja);
-
-            // Simpan detail profesi alumni
-            DetailProfesiAlumni::create([
-                'alumni_id' => $alumni->alumni_id,
-                'kategori_id' => $request->kategori_id,
-                'profesi' => $request->profesi,
-                'masa_tunggu' => $masa_tunggu,
-                'status_pengisian' => 'Sudah Diisi',
-                'tanggal_pertama_kerja' => $request->tanggal_pertama_kerja,
-                'tanggal_mulai_kerja_instansi_saat_ini' => $request->tanggal_mulai_kerja,
-                'tanggal_pengisian' => now(),
-            ]);
 
             DB::commit();
 
-            // Kembalikan response JSON untuk dipakai frontend (emailjs)
             return response()->json([
                 'success' => true,
                 'token' => $token,
-                'email_atasan' => $request->email_atasan,
-                'nama_atasan' => $request->nama_atasan,
+                'email_atasan' => $request->email_atasan ?? null,
+                'nama_atasan' => $request->nama_atasan ?? null,
                 'nama_alumni' => $request->nama,
-                'profesi' => $request->profesi,
+                'profesi' => $request->profesi ?? null,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -345,24 +396,5 @@ class AlumniController extends Controller
         $alumnis = Alumni::with(['prodi', 'detailProfesi'])->get();
 
         return view('admin.daftarAlumni', compact('alumnis'));
-    }
-
-    public function verifikasiToken(Request $request)
-    {
-        $email = $request->email;
-        $token = $request->token;
-
-        $alumni = DB::table('token_alumni')
-            // ->where('email', $email)
-            ->where('token', $token)
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if ($alumni) {
-            // Token valid, bisa redirect ke dashboard alumni
-            return redirect()->route('alumni.form');
-        } else {
-            return back()->with('message', 'Token tidak valid atau sudah kedaluwarsa.');
-        }
     }
 }

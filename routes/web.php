@@ -12,14 +12,12 @@ Route::get('/', function () {
 });
 Route::get('/', [App\Http\Controllers\WelcomeController::class, 'jumlah']);
 
-Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm'])->name('request-token-alumni');
-Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);
+Route::get('/request_token', [TokenAlumniController::class, 'showForm'])->name('request_token');
+Route::post('/request_token', [TokenAlumniController::class, 'requestToken']);
 
-Route::get('alumni/cek-token-alumni', function () {
-    return view('alumni.cek_token_alumni');
-});
-
-Route::post('/verifikasi-token-alumni', [AlumniController::class, 'verifikasiToken'])->name('verifikasi.token');
+Route::get('/cek_token', function () {
+    return view('alumni.cek_token');
+})->name('cek_token');
 
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
