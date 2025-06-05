@@ -163,7 +163,7 @@ class DetailProfesiAlumniSeeder extends Seeder
                 'tanggal_mulai_kerja_instansi_saat_ini' => null,
                 'profesi' => null,
                 'tanggal_pengisian' => Carbon::now(),
-                'status_pengisian' => 'Belum Diisi'
+                'status_pengisian' => 'Sudah Diisi'
             ],
             [
                 'alumni_id' => 19,

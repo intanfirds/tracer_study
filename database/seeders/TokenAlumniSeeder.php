@@ -22,6 +22,13 @@ class TokenAlumniSeeder extends Seeder
                 'used_at' => now(),
             ],
             [
+                'email' => 'intin.firdausi@gmail.com',
+                'token' => '123456789932', // 12 characters
+                'alumni_id' => 2,
+                'expires_at' => now()->addDays(30),
+                'used_at' => null,
+            ],
+            [
                 'email' => 'scarlletaja27@gmail.com',
                 'token' => '098765432132', // 12 characters
                 'alumni_id' => 3,
@@ -82,14 +89,14 @@ class TokenAlumniSeeder extends Seeder
                 'token' => '210987654332', // 12 characters
                 'alumni_id' => 11,
                 'expires_at' => now()->addDays(30),
-                'used_at' => now(),
+                'used_at' => null,
             ],
             [
                 'email' => 'rina.lestari@example.com',
                 'token' => '109876543221', // 12 characters
                 'alumni_id' => 12,
                 'expires_at' => now()->addDays(30),
-                'used_at' => now(),
+                'used_at' => null,
             ],
             [
                 'email' => 'agus.santoso@example.com',
@@ -139,6 +146,13 @@ class TokenAlumniSeeder extends Seeder
                 'alumni_id' => 19,
                 'expires_at' => now()->addDays(30),
                 'used_at' => now(),
+            ],
+            [
+                'email' => 'putri.lestari@example.com',
+                'token' => '321098765421', // 12 characters
+                'alumni_id' => 20,
+                'expires_at' => now()->addDays(30),
+                'used_at' => null,
             ],
         ]);
     }
