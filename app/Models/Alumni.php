@@ -23,10 +23,10 @@ class Alumni extends Authenticatable
         'email',
     ];
 
-    public function detailProfesi()
-    {
-        return $this->hasOne(DetailProfesiAlumni::class, 'alumni_id', 'alumni_id');
-    }
+   public function detailProfesi()
+{
+    return $this->hasMany(DetailProfesiAlumni::class, 'alumni_id', 'alumni_id');
+}
 
     public $timestamps = true;
 
@@ -64,4 +64,22 @@ class Alumni extends Authenticatable
     {
         return $this->hasOne(SurveyKepuasanLulusan::class, 'alumni_id', 'alumni_id');
     }
+
+ public function latestDetailProfesi()
+    {
+        return $this->hasOne(DetailProfesiAlumni::class, 'alumni_id')->latestOfMany('tanggal_pertama_kerja');
+    }
+ public function detailProfesiAlumnis()
+    {
+        return $this->hasMany(DetailProfesiAlumni::class, 'alumni_id');
+    }
+     public function instansis()
+    {
+        return $this->hasMany(Instansi::class, 'alumni_id');
+    }
+
+
+
+
+    
 }

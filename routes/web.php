@@ -60,3 +60,31 @@ Route::post('/survey/request-new-token', [SurveyKepuasanController::class, 'requ
 
 Route::get('/alumni/form', [AlumniController::class, 'form'])->name('alumni.form');
 Route::post('/alumni/form', [AlumniController::class, 'store'])->name('alumni.store');
+
+Route::get('/debug-alumni', function() {
+    $alumnis = App\Models\Alumni::with([
+        'latestDetailProfesi.instansi.jenisInstansi',
+        'latestDetailProfesi.kategoriProfesi',
+        'prodi'
+    ])->limit(10)->get();
+
+    foreach ($alumnis as $alumni) {
+        echo "Alumni: {$alumni->nama}\n";
+        $detailProfesi = $alumni->latestDetailProfesi;
+        if ($detailProfesi) {
+            echo "- Profesi: {$detailProfesi->profesi}\n";
+            $instansi = $detailProfesi->instansi;
+            if ($instansi) {
+                echo "-- Instansi: {$instansi->nama_instansi}\n";
+                echo "--- Jenis Instansi: " . ($instansi->jenisInstansi ? $instansi->jenisInstansi->nama_jenis_instansi : 'null') . "\n";
+            } else {
+                echo "-- Instansi: null\n";
+            }
+            $kategoriProfesi = $detailProfesi->kategoriProfesi;
+            echo "- Kategori Profesi: " . ($kategoriProfesi ? $kategoriProfesi->nama : 'null') . "\n";
+        } else {
+            echo "- Profesi: null\n";
+        }
+        echo "\n";
+    }
+});

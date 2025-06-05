@@ -166,10 +166,10 @@ public function export_excel()
     // Data
     $row = $headerRow + 1;
     foreach ($data as $item) {
-        $sheet->setCellValue('A' . $row, $item->instansi->nama ?? '-');
-        $sheet->setCellValue('B' . $row, $item->instansi->nama ?? '-');
+        $sheet->setCellValue('A' . $row, $item->instansi->nama_atasan ?? '-');
+        $sheet->setCellValue('B' . $row, $item->instansi->nama_instansi ?? '-');
         $sheet->setCellValue('C' . $row, $item->instansi->jabatan ?? '-');
-        $sheet->setCellValue('D' . $row, $item->instansi->email ?? '-');
+        $sheet->setCellValue('D' . $row, $item->instansi->email_atasan ?? '-');
         $sheet->setCellValue('E' . $row, $item->alumni->nama ?? '-');
         $sheet->setCellValue('F' . $row, $item->alumni->prodi->nama_prodi ?? '-');
         $sheet->setCellValue('G' . $row, $item->alumni->tahun_lulus ?? '-');
@@ -202,13 +202,12 @@ public function export_excel()
     exit;
 }
 
-
 public function exportBelumIsiExcel()
 {
-    // Ambil instansi yang belum mengisi survey, dengan relasi alumni
-    $data = Instansi::whereNotIn('instansi_id', function($query) {
-        $query->select('instansi_id')->from('survey_kepuasan_lulusans');
-    })->with('alumni')->get();
+    // Ambil instansi yang belum mengisi survey atau belum menyelesaikannya
+    $data = Instansi::whereDoesntHave('surveyKepuasanLulusan', function ($query) {
+        $query->where('status_pengisian', 'Selesai'); // atau status lain yang dianggap "sudah isi"
+    })->with(['alumni', 'alumni.prodi'])->get();
 
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
@@ -229,7 +228,6 @@ public function exportBelumIsiExcel()
     $sheet->setCellValue('F'.$headerRow, 'Nama Alumni');
     $sheet->setCellValue('G'.$headerRow, 'Program Studi');
     $sheet->setCellValue('H'.$headerRow, 'Tahun Lulus');
-
     $sheet->getStyle('A'.$headerRow.':H'.$headerRow)->getFont()->setBold(true);
 
     // Data
@@ -243,7 +241,7 @@ public function exportBelumIsiExcel()
 
         $alumni = $item->alumni;
         $sheet->setCellValue('F'.$row, $alumni ? $alumni->nama : '-');
-        $sheet->setCellValue('G'.$row, $alumni ? $alumni->prodi->nama_prodi: '-');
+        $sheet->setCellValue('G'.$row, ($alumni && $alumni->prodi) ? $alumni->prodi->nama_prodi : '-');
         $sheet->setCellValue('H'.$row, $alumni ? $alumni->tahun_lulus : '-');
 
         $row++;
