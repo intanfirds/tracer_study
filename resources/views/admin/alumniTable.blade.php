@@ -1,4 +1,6 @@
-<table class="table table-bordered table-hover table-sm">
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-hover table-sm">
     <thead>
         <tr>
             <th>No</th>
@@ -36,3 +38,5 @@
         @endforelse
     </tbody>
 </table>
+    </table>
+</div>
