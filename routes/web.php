@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/', [App\Http\Controllers\WelcomeController::class, 'jumlah']);
 
 Route::get('/request-token-alumni', [TokenAlumniController::class, 'showForm'])->name('request-token-alumni');
 Route::post('/request-token-alumni', [TokenAlumniController::class, 'requestToken']);

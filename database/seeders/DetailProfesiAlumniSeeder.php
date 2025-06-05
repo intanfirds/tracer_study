@@ -38,9 +38,9 @@ class DetailProfesiAlumniSeeder extends Seeder
             [
                 'alumni_id' => 4,
                 'kategori_id' => 4,
-                'tanggal_pertama_kerja' => null,
-                'masa_tunggu' => null,
-                'tanggal_mulai_kerja_instansi_saat_ini' => null,
+                'tanggal_pertama_kerja' => Carbon::parse('2023-01-15'),
+                'masa_tunggu' => 2,
+                'tanggal_mulai_kerja_instansi_saat_ini' => Carbon::parse('2023-02-01'),
                 'profesi' => 'Mahasiswa S2 Teknologi Informasi',
                 'tanggal_pengisian' => Carbon::now(),
                 'status_pengisian' => 'Sudah Diisi'
@@ -106,26 +106,6 @@ class DetailProfesiAlumniSeeder extends Seeder
                 'status_pengisian' => 'Sudah Diisi'
             ],
             [
-                'alumni_id' => 11,
-                'kategori_id' => 3,
-                'tanggal_pertama_kerja' => null,
-                'masa_tunggu' => null,
-                'tanggal_mulai_kerja_instansi_saat_ini' => null,
-                'profesi' => null,
-                'tanggal_pengisian' => Carbon::now(),
-                'status_pengisian' => 'Belum Diisi'
-            ],
-            [
-                'alumni_id' => 12,
-                'kategori_id' => 4,
-                'tanggal_pertama_kerja' => null,
-                'masa_tunggu' => null,
-                'tanggal_mulai_kerja_instansi_saat_ini' => null,
-                'profesi' => 'Mahasiswa S2 Informatika',
-                'tanggal_pengisian' => Carbon::now(),
-                'status_pengisian' => 'Sudah Diisi'
-            ],
-            [
                 'alumni_id' => 13,
                 'kategori_id' => 1,
                 'tanggal_pertama_kerja' => Carbon::parse('2021-10-01'),
@@ -147,11 +127,11 @@ class DetailProfesiAlumniSeeder extends Seeder
             ],
             [
                 'alumni_id' => 15,
-                'kategori_id' => 5,
+                'kategori_id' => 3,
                 'tanggal_pertama_kerja' => null,
                 'masa_tunggu' => null,
                 'tanggal_mulai_kerja_instansi_saat_ini' => null,
-                'profesi' => 'Mahasiswa Pascasarjana Ekonomi',
+                'profesi' => null,
                 'tanggal_pengisian' => Carbon::now(),
                 'status_pengisian' => 'Sudah Diisi'
             ],
@@ -192,16 +172,6 @@ class DetailProfesiAlumniSeeder extends Seeder
                 'masa_tunggu' => 5,
                 'tanggal_mulai_kerja_instansi_saat_ini' => Carbon::parse('2023-01-01'),
                 'profesi' => 'Frontend Developer',
-                'tanggal_pengisian' => Carbon::now(),
-                'status_pengisian' => 'Sudah Diisi'
-            ],
-            [
-                'alumni_id' => 20,
-                'kategori_id' => 4,
-                'tanggal_pertama_kerja' => null,
-                'masa_tunggu' => null,
-                'tanggal_mulai_kerja_instansi_saat_ini' => null,
-                'profesi' => 'Mahasiswa S2 Data Science',
                 'tanggal_pengisian' => Carbon::now(),
                 'status_pengisian' => 'Sudah Diisi'
             ],

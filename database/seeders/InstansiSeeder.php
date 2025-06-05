@@ -26,29 +26,41 @@ class InstansiSeeder extends Seeder
                 'email_atasan' => 'agus@digitalsolusi.com',
                 'no_hp_atasan' => '085800112233'
             ],
+            [   
+                'level_id' => 3,
+                'alumni_id' => 2,
+                'nama_instansi' => 'PT Inovasi Teknologi',
+                'nama_atasan' => 'Budi Setiawan',
+                'jenis_instansi_id' => 3,
+                'lokasi_instansi' => 'Bandung',
+                'jabatan' => 'Data Scientist',
+                'skala' => 'Nasional',
+                'email_atasan' => 'budi@inovati.com',
+                'no_hp_atasan' => '085800334455'
+            ],
             [
                 'level_id' => 3,
                 'alumni_id' => 4,
-                'nama_instansi' => 'PT Mega Digital',
-                'nama_atasan' => 'Eko Prasetyo',
-                'jenis_instansi_id' => 3,
-                'lokasi_instansi' => 'Surabaya',
-                'jabatan' => 'Full Stack Developer',
+                'nama_instansi' => 'Universitas Teknologi Indonesia',
+                'nama_atasan' => 'Dr. Rina Wijaya',
+                'jenis_instansi_id' => 1,
+                'lokasi_instansi' => 'Jakarta',
+                'jabatan' => 'Dosen Teknologi Informasi',
                 'skala' => 'Nasional',
-                'email_atasan' => 'eko@megadigital.com',
-                'no_hp_atasan' => '085811114444'
+                'email_atasan' => 'rina@ut.ac.id',
+                'no_hp_atasan' => '085800112233'
             ],
             [
                 'level_id' => 3,
                 'alumni_id' => 5,
-                'nama_instansi' => 'Institut Teknologi Nasional',
-                'nama_atasan' => 'Prof. Sudirman',
-                'jenis_instansi_id' => 1,
-                'lokasi_instansi' => 'Yogyakarta',
-                'jabatan' => 'Mahasiswa Pascasarjana',
+                'nama_instansi' => 'PT Keuangan Digital',
+                'nama_atasan' => 'Siti Aminah',
+                'jenis_instansi_id' => 2,
+                'lokasi_instansi' => 'Jakarta',
+                'jabatan' => 'Analis Keuangan',
                 'skala' => 'Nasional',
-                'email_atasan' => 'sudirman@itnas.ac.id',
-                'no_hp_atasan' => '085833335555'
+                'email_atasan' => 'siti@keuangandigital.com',
+                'no_hp_atasan' => '085822223333'
             ],
             [
                 'level_id' => 3,
@@ -58,7 +70,7 @@ class InstansiSeeder extends Seeder
                 'jenis_instansi_id' => 2,
                 'lokasi_instansi' => 'Semarang',
                 'jabatan' => 'PNS',
-                'skala' => 'Daerah',
+                'skala' => 'Nasional',
                 'email_atasan' => 'slamet@disparjateng.go.id',
                 'no_hp_atasan' => '085855551111'
             ],
@@ -70,7 +82,7 @@ class InstansiSeeder extends Seeder
                 'jenis_instansi_id' => 3,
                 'lokasi_instansi' => 'Jakarta',
                 'jabatan' => 'DevOps Engineer',
-                'skala' => 'Nasional',
+                'skala' => 'Wirausaha',
                 'email_atasan' => 'wahyu@cloudtek.com',
                 'no_hp_atasan' => '085822221111'
             ],
@@ -142,7 +154,7 @@ class InstansiSeeder extends Seeder
                 'jenis_instansi_id' => 2,
                 'lokasi_instansi' => 'Bogor',
                 'jabatan' => 'Staf Administrasi',
-                'skala' => 'Daerah',
+                'skala' => 'Nasional',
                 'email_atasan' => 'hendra@pemdes.sukamaju.go.id',
                 'no_hp_atasan' => '085866660000'
             ],
@@ -158,42 +170,6 @@ class InstansiSeeder extends Seeder
                 'email_atasan' => 'aditya@creativeweb.com',
                 'no_hp_atasan' => '085899996666'
             ],
-            [
-                'level_id' => 3,
-                'alumni_id' => 12,
-                'nama_instansi' => 'Universitas Digital Nusantara',
-                'nama_atasan' => 'Dr. Rudi Santoso',
-                'jenis_instansi_id' => 1,
-                'lokasi_instansi' => 'Bandung',
-                'jabatan' => 'Mahasiswa S2 Informatika',
-                'skala' => 'Nasional',
-                'email_atasan' => 'rudi@udn.ac.id',
-                'no_hp_atasan' => '085811112222'
-            ],
-            [
-                'level_id' => 3,
-                'alumni_id' => 15,
-                'nama_instansi' => 'Universitas Ekonomi Bangsa',
-                'nama_atasan' => 'Prof. Lina Puspita',
-                'jenis_instansi_id' => 1,
-                'lokasi_instansi' => 'Jakarta',
-                'jabatan' => 'Mahasiswa Pascasarjana Ekonomi',
-                'skala' => 'Nasional',
-                'email_atasan' => 'lina@ueb.ac.id',
-                'no_hp_atasan' => '085800001111'
-            ],
-            [
-                'level_id' => 3,
-                'alumni_id' => 20,
-                'nama_instansi' => 'Institut Data Science Indonesia',
-                'nama_atasan' => 'Dr. Andini Paramita',
-                'jenis_instansi_id' => 1,
-                'lokasi_instansi' => 'Yogyakarta',
-                'jabatan' => 'Mahasiswa S2 Data Science',
-                'skala' => 'Nasional',
-                'email_atasan' => 'andini@idsi.ac.id',
-                'no_hp_atasan' => '085822226666'
-            ]
         ]);
     }
 }
