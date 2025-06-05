@@ -92,12 +92,6 @@ class TokenInstansiSeeder extends Seeder
                 'expired_at' => now()->addDays(30),
                 'is_used' => false,
             ],
-            [
-                'token' => '876543210921', // 12 characters
-                'instansi_id' => 14,
-                'expired_at' => now()->addDays(30),
-                'is_used' => false,
-            ],
         ]);
     }
 }
