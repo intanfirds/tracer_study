@@ -213,6 +213,8 @@
     <!-- jQuery dan EmailJS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         function togglePekerjaanFields(disable) {
             $('.pekerjaan-field input, .pekerjaan-field select').prop('disabled', disable);
@@ -254,36 +256,66 @@
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
-                        // response diasumsikan JSON { success: true, token: "...", email_atasan: "...", nama_atasan: "...", nama_alumni: "...", profesi: "..." }
                         if (response.success) {
-                            const emailParams = {
-                                to_email: response.email_atasan,
-                                to_name: response.nama_atasan,
-                                alumni_name: response.nama_alumni,
-                                alumni_profesi: response.profesi,
-                                token: response.token,
-                                survey_link: `{{ url('/survey/index') }}?token=${response.token}`
-                            };
+                            if (response.token && response.email_atasan) {
+                                const emailParams = {
+                                    to_email: response.email_atasan,
+                                    to_name: response.nama_atasan,
+                                    alumni_name: response.nama_alumni,
+                                    alumni_profesi: response.profesi,
+                                    token: response.token,
+                                    survey_link: `{{ url('/survey/index') }}?token=${response.token}`
+                                };
 
-                            emailjs.send('service_n8pyris', 'template_el4150l', emailParams)
-                                .then(function() {
-                                    alert(
-                                        "Data berhasil disimpan dan email terkirim ke atasan.");
-                                    window.location.href =
-                                        "{{ route('request-token-alumni') }}";
-                                }, function(error) {
-                                    console.error("Gagal kirim email:", error);
-                                    alert(
-                                        "Data berhasil disimpan, tapi gagal mengirim email ke atasan.");
-                                    window.location.href =
-                                        "{{ route('request-token-alumni') }}";
+                                emailjs.send('service_n8pyris', 'template_el4150l', emailParams)
+                                    .then(function() {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Sukses!',
+                                            text: 'Data berhasil disimpan dan email terkirim ke atasan.',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            window.location.href =
+                                                "{{ route('cek_token') }}";
+                                        });
+                                    }, function(error) {
+                                        console.error("Gagal kirim email:", error);
+                                        Swal.fire({
+                                            icon: 'warning',
+                                            title: 'Peringatan',
+                                            text: 'Data berhasil disimpan, tapi gagal mengirim email ke atasan.',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            window.location.href =
+                                                "{{ route('cek_token') }}";
+                                        });
+                                    });
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sukses!',
+                                    text: 'Data berhasil disimpan.',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    window.location.href = "{{ route('cek_token') }}";
                                 });
+                            }
                         } else {
-                            alert("Gagal menyimpan data.");
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: 'Gagal menyimpan data.',
+                                confirmButtonText: 'OK'
+                            });
                         }
                     },
                     error: function(xhr) {
-                        alert("Terjadi kesalahan saat menyimpan data.");
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Kesalahan!',
+                            text: 'Terjadi kesalahan saat menyimpan data.',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 });
             });
