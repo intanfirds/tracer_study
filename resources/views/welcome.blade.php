@@ -534,6 +534,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#faq">FAQ</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#cta-section">Isi Data Alumni</a>
+                    </li>
                     <li class="nav-item ms-lg-3">
                         <a class="btn btn-outline-primary" href="{{ url('/login') }}">Masuk Admin</a>
                     </li>
@@ -548,14 +551,14 @@
             <div class="row align-items-center">
                 <div class="col-lg-6 hero-content" data-aos="fade-right" data-aos-duration="1000">
                     <h1 class="hero-title animate__animated animate__fadeInDown">Selamat Datang di Tracer Study</h1>
-                    <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">Dari Alumni, Untuk Kemajuan Institusi</p>
+                    <p class="hero-subtitle animate__animated animate__fadeIn animate__delay-1s">Dari Alumni JTI, Untuk Kemajuan Institusi</p>
                     <p class="mb-4 animate__animated animate__fadeIn animate__delay-1s">
-                        Selamat datang di Laman Tracer Study Politeknik Negeri Malang. Platform ini menghimpun data alumni 
-                        untuk evaluasi dan pengembangan mutu pendidikan di Polinema. Kami berupaya mengetahui jejak karir 
+                        Selamat datang di Laman Tracer Study JTI Politeknik Negeri Malang. Platform ini menghimpun data alumni 
+                        untuk evaluasi dan pengembangan mutu pendidikan di Polinema Khususnya Jurusan Teknologi Informasi. Kami berupaya mengetahui jejak karir 
                         lulusan serta memperoleh umpan balik guna meningkatkan kualitas pembelajaran.
                     </p>
                     <div class="d-flex flex-wrap gap-3 animate__animated animate__fadeIn animate__delay-1s">
-                        <a href="#cta-section" class="btn btn-light btn-primary-custom me-2">
+                        <a href="{{ url('/cek_token') }}" class="btn btn-light btn-primary-custom me-2">
                             <i class="bi bi-pencil-square me-2"></i>Isi Data Alumni
                         </a>
                         <a href="{{ url('/login') }}" class="btn btn-outline-light">

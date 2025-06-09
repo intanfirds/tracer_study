@@ -22,7 +22,7 @@ class TokenAlumniSeeder extends Seeder
                 'used_at' => now(),
             ],
             [
-                'email' => 'intin.firdausi@gmail.com',
+                'email' => 'intanfir27@gmail.com',
                 'token' => '123456789932', // 12 characters
                 'alumni_id' => 2,
                 'expires_at' => now()->addDays(30),
