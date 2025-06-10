@@ -76,17 +76,16 @@ class AdminController extends Controller
                 'selectedProdi' => $prodiId,
                 'selectedTahun' => $tahunLulus,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Dashboard Error: ' . $e->getMessage());
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Terjadi kesalahan saat memuat data'
                 ], 500);
             }
-            
+
             return back()->with('error', 'Terjadi kesalahan saat memuat data');
         }
     }
@@ -126,12 +125,14 @@ class AdminController extends Controller
         // PROFESI
         $profesiQuery = DB::table('detail_profesi_alumnis')
             ->join('alumnis', 'detail_profesi_alumnis.alumni_id', '=', 'alumnis.alumni_id')
-            ->select(DB::raw("CASE 
+            ->select(
+                DB::raw("CASE 
                 WHEN TRIM(detail_profesi_alumnis.profesi) IS NULL OR TRIM(detail_profesi_alumnis.profesi) = '' 
                 THEN 'belum bekerja'
                 ELSE LOWER(detail_profesi_alumnis.profesi)
-                END as profesi_normalized"), 
-                DB::raw('count(*) as total'))
+                END as profesi_normalized"),
+                DB::raw('count(*) as total')
+            )
             ->groupBy('profesi_normalized');
 
         if ($prodiId) {
@@ -153,7 +154,7 @@ class AdminController extends Controller
         $othersTotal = $sortedProfesi->skip(10)->sum('total');
 
         // Siapkan labels dan data
-        $labels = $top10->pluck('profesi_normalized')->map(function($item) {
+        $labels = $top10->pluck('profesi_normalized')->map(function ($item) {
             return ucwords($item); // Biar tampil capital di chart
         })->toArray();
 
@@ -264,7 +265,7 @@ class AdminController extends Controller
     }
 
     // Fungsi ambil data survey untuk pie chart kepuasan
-    protected function fetchSurveyDataChart($prodiId,   $tahunLulus ) 
+    protected function fetchSurveyDataChart($prodiId,   $tahunLulus)
     {
         $query = DB::table('survey_kepuasan_lulusans')
             ->join('alumnis', 'survey_kepuasan_lulusans.alumni_id', '=', 'alumnis.alumni_id');
@@ -384,19 +385,27 @@ class AdminController extends Controller
         $kategoris = KategoriProfesi::all();
         return view('admin.edit', compact('alumni', 'prodis', 'kategoris'));
     }
+
     public function destroy($id)
     {
-        Alumni::destroy($id);
+        // Cari alumni beserta relasinya
+        $alumni = Alumni::with(['tokenAlumni', 'detailProfesi'])->findOrFail($id);
 
-        $alumni = Alumni::with(['level', 'prodi'])->get();
-        $prodi = ProgramStudi::all();
+        // Hapus data terkait terlebih dahulu
+        if ($alumni->tokenAlumni) {
+            $alumni->tokenAlumni()->delete();
+        }
 
-        return view('admin.daftarAlumni', [
-            'page' => (object)['title' => 'Daftar Alumni'],
-            'alumni' => $alumni,
-            'prodi' => $prodi,
-            'success' => 'Data alumni berhasil dihapus.'
-        ]);
+        if ($alumni->detailProfesi) {
+            $alumni->detailProfesi()->delete();
+        }
+
+        // Baru hapus alumni
+        $alumni->delete();
+
+        // Redirect ke halaman daftar alumni dengan pesan sukses
+        return redirect()->route('admin.daftarAlumni')
+            ->with('success', 'Data alumni berhasil dihapus.');
     }
 
     public function update(Request $request, $id)
@@ -417,7 +426,7 @@ class AdminController extends Controller
         ]);
 
         if ($alumni->detailProfesi) {
-            $alumni->detailProfesi->update([
+            $alumni->detailProfesi->first()->update([
                 'profesi' => $request->profesi ?? '',
             ]);
         }
@@ -426,7 +435,6 @@ class AdminController extends Controller
         $allProdi = ProgramStudi::all();
 
         return redirect()->route('admin.daftarAlumni')->with('success', 'Data alumni berhasil diperbarui.');
-
     }
 
 
@@ -456,7 +464,7 @@ class AdminController extends Controller
         );
 
         // Kirim email
-        Mail::send('email.admin_reset_password', ['token' => $token], function($message) use ($request) {
+        Mail::send('email.admin_reset_password', ['token' => $token], function ($message) use ($request) {
             $message->to($request->email);
             $message->subject('Reset Password Admin');
         });
@@ -466,7 +474,7 @@ class AdminController extends Controller
 
     public function showResetForm($token)
     {
-        
+
         return view('auth.resetPasswordAdmin', ['token' => $token]);
     }
 
@@ -495,6 +503,4 @@ class AdminController extends Controller
 
         return redirect()->route('login')->with('status', 'Password berhasil direset.');
     }
-
-
 }

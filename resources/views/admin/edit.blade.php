@@ -39,7 +39,7 @@
                 {{-- Bisa tambah profesi kalau dibutuhkan --}}
                 <div class="form-group">
                     <label for="profesi">Profesi</label>
-                    <input type="text" id="profesi" name="profesi" value="{{ $alumni->detailProfesi->profesi ?? '' }}" class="form-control">
+                    <input type="text" id="profesi" name="profesi" value="{{ $alumni->detailProfesi->first()->profesi ?? '' }}" class="form-control">
                 </div>
 
                 <div class="form-group">
