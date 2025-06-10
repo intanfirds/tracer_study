@@ -23,12 +23,12 @@ class Instansi extends Model
         'skala',
         'email_atasan',
         'no_hp_atasan',
-        'kategori_id',  
+        'kategori_id',
     ];
-    
+
     public $timestamps = true;
 
-   public function alumni()
+    public function alumni()
     {
         return $this->belongsTo(Alumni::class, 'alumni_id');
     }
@@ -41,7 +41,7 @@ class Instansi extends Model
     {
         return $this->hasMany(SurveyKepuasanLulusan::class, 'instansi_id', 'instansi_id');
     }
-    
+
     public function jenisInstansi()
     {
         return $this->belongsTo(JenisInstansi::class, 'jenis_instansi_id');

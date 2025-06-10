@@ -6,6 +6,7 @@ use App\Models\Alumni;
 use App\Models\ProgramStudi;
 use App\Models\Instansi;
 use App\Models\DetailProfesiAlumni;
+use App\Models\TokenAlumni;
 use App\Models\JenisInstansi;
 use App\Models\KategoriProfesi;
 use Illuminate\Support\Facades\Validator;
@@ -248,29 +249,65 @@ class AlumniController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $data = $sheet->toArray(null, false, true, true);
 
-            $insert = [];
+            $emails = [];
+
             if (count($data) > 1) {
                 foreach ($data as $baris => $value) {
                     if ($baris > 1) {
-                        $insert[] = [
-                            'level_id' => $value['A'],
-                            'NIM' => $value['B'],
-                            'password' => $value['C'],
-                            'prodi_id' => $value['D'],
-                            'nama' => $value['E'],
-                            'no_hp' => $value['F'],
-                            'email' => $value['G'],
-                            'created_at' => now(),
+                        // Validasi manual per baris
+                        if (empty($value['B'])) {
+                            return redirect()->back()->with('error', "Baris ke-$baris: NIM tidak boleh kosong.");
+                        }
+                        if (empty($value['C'])) {
+                            return redirect()->back()->with('error', "Baris ke-$baris: Password tidak boleh kosong.");
+                        }
+                        if (empty($value['F']) || !filter_var($value['F'], FILTER_VALIDATE_EMAIL)) {
+                            return redirect()->back()->with('error', "Baris ke-$baris: Email kosong atau tidak valid.");
+                        }
+                        if (empty($value['G'])) {
+                            return redirect()->back()->with('error', "Baris ke-$baris: Tahun lulus tidak boleh kosong.");
+                        }
+
+                        // Simpan ke tabel alumni
+                        $alumni = Alumni::updateOrCreate(
+                            ['NIM' => $value['B']],
+                            [
+                                'level_id' => $value['A'],
+                                'password' => $value['C'],
+                                'prodi_id' => $value['D'],
+                                'nama' => $value['E'],
+                                'email' => $value['F'],
+                                'tahun_lulus' => $value['G'],
+                                'created_at' => now(),
+                            ]
+                        );
+
+                        // Generate token 12 digit
+                        $token = '';
+                        for ($i = 0; $i < 12; $i++) {
+                            $token .= rand(0, 9);
+                        }
+
+                        // Simpan token ke database
+                        TokenAlumni::create([
+                            'alumni_id' => $alumni->alumni_id,
+                            'email' => $alumni->email,
+                            'token' => $token,
+                            'expires_at' => Carbon::now()->addMonth(),
+                        ]);
+
+                        // Simpan untuk dikirim via EmailJS
+                        $emails[] = [
+                            'email' => $alumni->email,
+                            'token' => $token,
                         ];
                     }
                 }
 
-                if (count($insert) > 0) {
-                    Alumni::insertOrIgnore($insert);
-                    return redirect()->back()->with('success', 'Data berhasil diimpor.');
-                } else {
-                    return redirect()->back()->with('warning', 'Tidak ada data yang diimpor.');
-                }
+                return redirect()->back()
+                    ->with('success', 'Data berhasil diimpor.')
+                    ->with('send_email', true)
+                    ->with('email_data', $emails);
             } else {
                 return redirect()->back()->with('warning', 'File tidak memiliki data.');
             }
@@ -278,161 +315,162 @@ class AlumniController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor: ' . $e->getMessage());
         }
     }
-public function export_excel()
-{
-    $alumnis = Alumni::with([
-        'prodi',
-        'latestDetailProfesi.kategoriProfesi',
-        'instansis.jenisInstansi'
-    ])->orderBy('nama')->get();
 
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
+    public function export_excel()
+    {
+        $alumnis = Alumni::with([
+            'prodi',
+            'latestDetailProfesi.kategoriProfesi',
+            'instansis.jenisInstansi'
+        ])->orderBy('nama')->get();
 
-    $headers = [
-        'A1' => 'Program Studi',
-        'B1' => 'NIM',
-        'C1' => 'Nama',
-        'D1' => 'No.HP',
-        'E1' => 'Email',
-        'F1' => 'Tanggal Lulus',
-        'G1' => 'Tahun Lulus',
-        'H1' => 'Tanggal Pertama Kerja',
-        'I1' => 'Masa Tunggu',
-        'J1' => 'Tgl Mulai Kerja Instansi Saat Ini',
-        'K1' => 'Jenis Instansi',
-        'L1' => 'Nama Instansi',
-        'M1' => 'Skala',
-        'N1' => 'Lokasi Instansi',
-        'O1' => 'Kategori Profesi',
-        'P1' => 'Profesi',
-        'Q1' => 'Pendapatan',
-        'R1' => 'Alamat Kantor',
-        'S1' => 'Kabupaten',
-        'T1' => 'Nama Atasan Langsung',
-        'U1' => 'Jabatan Atasan Langsung',
-        'V1' => 'No HP Atasan Langsung',
-        'W1' => 'Email Atasan Langsung'
-    ];
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-    foreach ($headers as $cell => $text) {
-        $sheet->setCellValue($cell, $text);
+        $headers = [
+            'A1' => 'Program Studi',
+            'B1' => 'NIM',
+            'C1' => 'Nama',
+            'D1' => 'No.HP',
+            'E1' => 'Email',
+            'F1' => 'Tanggal Lulus',
+            'G1' => 'Tahun Lulus',
+            'H1' => 'Tanggal Pertama Kerja',
+            'I1' => 'Masa Tunggu',
+            'J1' => 'Tgl Mulai Kerja Instansi Saat Ini',
+            'K1' => 'Jenis Instansi',
+            'L1' => 'Nama Instansi',
+            'M1' => 'Skala',
+            'N1' => 'Lokasi Instansi',
+            'O1' => 'Kategori Profesi',
+            'P1' => 'Profesi',
+            'Q1' => 'Pendapatan',
+            'R1' => 'Alamat Kantor',
+            'S1' => 'Kabupaten',
+            'T1' => 'Nama Atasan Langsung',
+            'U1' => 'Jabatan Atasan Langsung',
+            'V1' => 'No HP Atasan Langsung',
+            'W1' => 'Email Atasan Langsung'
+        ];
+
+        foreach ($headers as $cell => $text) {
+            $sheet->setCellValue($cell, $text);
+        }
+
+        $sheet->getStyle('A1:W1')->getFont()->setBold(true);
+
+        $row = 2;
+        foreach ($alumnis as $alumni) {
+            $detailProfesi = $alumni->latestDetailProfesi;
+
+            // Ambil instansi terbaru, misal yang paling akhir (kamu bisa sesuaikan logicnya)
+            $instansi = $alumni->instansis->sortByDesc('instansi_id')->first();
+
+            $jenisInstansi = $instansi && $instansi->jenisInstansi ? $instansi->jenisInstansi->nama_jenis_instansi : '-';
+            $kategoriProfesi = $detailProfesi && $detailProfesi->kategoriProfesi ? $detailProfesi->kategoriProfesi->nama : '-';
+
+            $sheet->setCellValue('A' . $row, $alumni->prodi ? $alumni->prodi->nama_prodi : '-');
+            $sheet->setCellValue('B' . $row, $alumni->NIM);
+            $sheet->setCellValue('C' . $row, $alumni->nama);
+            $sheet->setCellValue('D' . $row, $alumni->no_hp);
+            $sheet->setCellValue('E' . $row, $alumni->email);
+            $sheet->setCellValue('F' . $row, $alumni->tahun_lulus ? $alumni->tahun_lulus : '-');
+            $sheet->setCellValue('G' . $row, $alumni->tahun_lulus);
+
+            $sheet->setCellValue('H' . $row, $detailProfesi ? $detailProfesi->tanggal_pertama_kerja : '-');
+            $sheet->setCellValue('I' . $row, $detailProfesi ? $detailProfesi->masa_tunggu : '-');
+            $sheet->setCellValue('J' . $row, $detailProfesi ? $detailProfesi->tanggal_mulai_kerja_instansi_saat_ini : '-');
+
+            $sheet->setCellValue('K' . $row, $jenisInstansi);
+            $sheet->setCellValue('L' . $row, $instansi ? $instansi->nama_instansi : '-');
+            $sheet->setCellValue('M' . $row, $instansi ? $instansi->skala : '-');
+            $sheet->setCellValue('N' . $row, $instansi ? $instansi->lokasi_instansi : '-');
+
+            $sheet->setCellValue('O' . $row, $kategoriProfesi);
+            $sheet->setCellValue('P' . $row, $detailProfesi ? $detailProfesi->profesi : '-');
+
+            $sheet->setCellValue('Q' . $row, '-'); // Pendapatan belum ada
+            $sheet->setCellValue('R' . $row, '-'); // Alamat Kantor belum ada
+            $sheet->setCellValue('S' . $row, '-'); // Kabupaten belum ada
+
+            $sheet->setCellValue('T' . $row, $instansi ? $instansi->nama_atasan : '-');
+            $sheet->setCellValue('U' . $row, $instansi ? $instansi->jabatan : '-');
+            $sheet->setCellValue('V' . $row, $instansi ? $instansi->no_hp_atasan : '-');
+            $sheet->setCellValue('W' . $row, $instansi ? $instansi->email_atasan : '-');
+
+            $row++;
+        }
+
+        foreach (range('A', 'W') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $sheet->setTitle('Data Alumni Lengkap');
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data_Alumni_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
     }
 
-    $sheet->getStyle('A1:W1')->getFont()->setBold(true);
+    public function export_belum_survey()
+    {
+        $alumni = Alumni::whereDoesntHave('detailProfesi', function ($query) {
+            $query->where('status_pengisian', 'Sudah Diisi');
+        })
+            ->with('prodi')
+            ->orderBy('nama')
+            ->get();
 
-    $row = 2;
-    foreach ($alumnis as $alumni) {
-        $detailProfesi = $alumni->latestDetailProfesi;
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-        // Ambil instansi terbaru, misal yang paling akhir (kamu bisa sesuaikan logicnya)
-        $instansi = $alumni->instansis->sortByDesc('instansi_id')->first();
+        // Header
+        $sheet->setCellValue('A1', 'Program Studi');
+        $sheet->setCellValue('B1', 'NIM');
+        $sheet->setCellValue('C1', 'Nama');
+        $sheet->setCellValue('D1', 'Tanggal Lulus');
+        $sheet->getStyle('A1:D1')->getFont()->setBold(true);
 
-        $jenisInstansi = $instansi && $instansi->jenisInstansi ? $instansi->jenisInstansi->nama_jenis_instansi : '-';
-        $kategoriProfesi = $detailProfesi && $detailProfesi->kategoriProfesi ? $detailProfesi->kategoriProfesi->nama : '-';
+        // Data
+        $baris = 2;
+        foreach ($alumni as $value) {
+            $sheet->setCellValue('A' . $baris, $value->prodi->nama_prodi ?? '-');
+            $sheet->setCellValue('B' . $baris, $value->NIM);
+            $sheet->setCellValue('C' . $baris, $value->nama);
 
-        $sheet->setCellValue('A' . $row, $alumni->prodi ? $alumni->prodi->nama_prodi : '-');
-        $sheet->setCellValue('B' . $row, $alumni->NIM);
-        $sheet->setCellValue('C' . $row, $alumni->nama);
-        $sheet->setCellValue('D' . $row, $alumni->no_hp);
-        $sheet->setCellValue('E' . $row, $alumni->email);
-        $sheet->setCellValue('F' . $row, $alumni->tahun_lulus ? $alumni->tahun_lulus : '-');
-        $sheet->setCellValue('G' . $row, $alumni->tahun_lulus);
+            $tanggalLulus = $value->tahun_lulus ? '31/07/' . $value->tahun_lulus : '-';
+            $sheet->setCellValue('D' . $baris, $tanggalLulus);
 
-        $sheet->setCellValue('H' . $row, $detailProfesi ? $detailProfesi->tanggal_pertama_kerja : '-');
-        $sheet->setCellValue('I' . $row, $detailProfesi ? $detailProfesi->masa_tunggu : '-');
-        $sheet->setCellValue('J' . $row, $detailProfesi ? $detailProfesi->tanggal_mulai_kerja_instansi_saat_ini : '-');
+            $baris++;
+        }
 
-        $sheet->setCellValue('K' . $row, $jenisInstansi);
-        $sheet->setCellValue('L' . $row, $instansi ? $instansi->nama_instansi : '-');
-        $sheet->setCellValue('M' . $row, $instansi ? $instansi->skala : '-');
-        $sheet->setCellValue('N' . $row, $instansi ? $instansi->lokasi_instansi : '-');
+        // Auto width
+        foreach (range('A', 'D') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
 
-        $sheet->setCellValue('O' . $row, $kategoriProfesi);
-        $sheet->setCellValue('P' . $row, $detailProfesi ? $detailProfesi->profesi : '-');
+        $sheet->setTitle('Alumni Belum Survey');
 
-        $sheet->setCellValue('Q' . $row, '-'); // Pendapatan belum ada
-        $sheet->setCellValue('R' . $row, '-'); // Alamat Kantor belum ada
-        $sheet->setCellValue('S' . $row, '-'); // Kabupaten belum ada
+        // Export
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Alumni_Belum_Survey_' . date('Y-m-d_H-i-s') . '.xlsx';
 
-        $sheet->setCellValue('T' . $row, $instansi ? $instansi->nama_atasan : '-');
-        $sheet->setCellValue('U' . $row, $instansi ? $instansi->jabatan : '-');
-        $sheet->setCellValue('V' . $row, $instansi ? $instansi->no_hp_atasan : '-');
-        $sheet->setCellValue('W' . $row, $instansi ? $instansi->email_atasan : '-');
-
-        $row++;
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"$filename\"");
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit;
     }
-
-    foreach (range('A', 'W') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
-
-    $sheet->setTitle('Data Alumni Lengkap');
-
-    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-    $filename = 'Data_Alumni_' . date('Y-m-d_H-i-s') . '.xlsx';
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="'.$filename.'"');
-    header('Cache-Control: max-age=0');
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-    header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
-    header('Cache-Control: cache, must-revalidate');
-    header('Pragma: public');
-
-    $writer->save('php://output');
-    exit;
-}
-
-public function export_belum_survey()
-{
-    $alumni = Alumni::whereDoesntHave('detailProfesi', function ($query) {
-    $query->where('status_pengisian', 'Sudah Diisi');
-})
-    ->with('prodi')
-    ->orderBy('nama')
-    ->get();
-
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-
-    // Header
-    $sheet->setCellValue('A1', 'Program Studi');
-    $sheet->setCellValue('B1', 'NIM');
-    $sheet->setCellValue('C1', 'Nama');
-    $sheet->setCellValue('D1', 'Tanggal Lulus');
-    $sheet->getStyle('A1:D1')->getFont()->setBold(true);
-
-    // Data
-    $baris = 2;
-    foreach ($alumni as $value) {
-        $sheet->setCellValue('A' . $baris, $value->prodi->nama_prodi ?? '-');
-        $sheet->setCellValue('B' . $baris, $value->NIM);
-        $sheet->setCellValue('C' . $baris, $value->nama);
-
-        $tanggalLulus = $value->tahun_lulus ? '31/07/' . $value->tahun_lulus : '-';
-        $sheet->setCellValue('D' . $baris, $tanggalLulus);
-
-        $baris++;
-    }
-
-    // Auto width
-    foreach (range('A', 'D') as $columnID) {
-        $sheet->getColumnDimension($columnID)->setAutoSize(true);
-    }
-
-    $sheet->setTitle('Alumni Belum Survey');
-
-    // Export
-    $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-    $filename = 'Alumni_Belum_Survey_' . date('Y-m-d_H-i-s') . '.xlsx';
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header("Content-Disposition: attachment; filename=\"$filename\"");
-    header('Cache-Control: max-age=0');
-    $writer->save('php://output');
-    exit;
-}
 
     public function daftarAlumni()
     {
