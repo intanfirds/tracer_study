@@ -6,7 +6,7 @@
             <ul class="navbar-nav align-items-end">
                 <!-- Logout Button -->
                 <li class="nav-item d-flex align-items-center me-2">
-                    <form method="POST" action="{{ route('admin.logout') }}">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="btn btn-sm mb-0"
                             style="background: #354764; color: white; min-width: 120px; padding: 8px 16px; border-radius: 5px;">
