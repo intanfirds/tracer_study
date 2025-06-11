@@ -51,4 +51,9 @@ class Instansi extends Model
     {
         return $this->belongsTo(KategoriProfesi::class, 'kategori_id', 'kategori_id');
     }
+
+    public function tokenInstansi()
+    {
+        return $this->hasOne(TokenInstansi::class, 'instansi_id');
+    }
 }

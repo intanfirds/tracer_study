@@ -388,22 +388,57 @@ class AdminController extends Controller
 
     public function destroy($id)
     {
-        // Cari alumni beserta relasinya
-        $alumni = Alumni::with(['tokenAlumni', 'detailProfesi'])->findOrFail($id);
+        // Ambil alumni beserta semua relasinya
+        $alumni = Alumni::with([
+            'tokenAlumni',
+            'detailProfesi',
+            'instansi.tokenInstansi',
+            'instansi.surveyKepuasanLulusan',
+            'survey'
+        ])->findOrFail($id);
 
-        // Hapus data terkait terlebih dahulu
+        // Hapus token alumni
         if ($alumni->tokenAlumni) {
-            $alumni->tokenAlumni()->delete();
+            $alumni->tokenAlumni->delete();
         }
 
-        if ($alumni->detailProfesi) {
-            $alumni->detailProfesi()->delete();
+        // Hapus detail profesi (jika banyak)
+        if ($alumni->detailProfesi && $alumni->detailProfesi->count() > 0) {
+            foreach ($alumni->detailProfesi as $detail) {
+                $detail->delete();
+            }
         }
 
-        // Baru hapus alumni
+        // Hapus survey (relasi langsung ke alumni)
+        if ($alumni->survey) {
+            $alumni->survey->delete();
+        }
+
+        // dd($alumni->instansi);
+
+        // Hapus data instansi (jika ada)
+        if ($alumni->instansi) {
+            // Hapus token_instansi
+            if ($alumni->instansi->tokenInstansi) {
+                $alumni->instansi->tokenInstansi->delete();
+            }
+
+            // Hapus semua survey kepuasan lulusan
+            if ($alumni->instansi->surveyKepuasanLulusan && $alumni->instansi->surveyKepuasanLulusan->count() > 0) {
+                foreach ($alumni->instansi->surveyKepuasanLulusan as $survey) {
+                    $survey->delete();
+                }
+            }
+
+            // Hapus instansi
+            $alumni->instansi->delete();
+        }
+
+        $alumni->save();
+
+        // Hapus alumni
         $alumni->delete();
 
-        // Redirect ke halaman daftar alumni dengan pesan sukses
         return redirect()->route('admin.daftarAlumni')
             ->with('success', 'Data alumni berhasil dihapus.');
     }
