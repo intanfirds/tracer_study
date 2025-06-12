@@ -77,4 +77,14 @@ class Alumni extends Authenticatable
     {
         return $this->detailProfesi->first()->profesi ?? 'Tidak ada profesi';
     }
+
+    // App\Models\Alumni.php
+
+    public function latestDetailProfesi()
+    {
+        return $this->hasOne(DetailProfesiAlumni::class, 'alumni_id', 'alumni_id')
+            ->latestOfMany('detail_profesi_id');
+
+    }
+
 }

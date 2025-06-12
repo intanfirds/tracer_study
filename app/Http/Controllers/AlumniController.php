@@ -321,7 +321,7 @@ class AlumniController extends Controller
         $alumnis = Alumni::with([
             'prodi',
             'latestDetailProfesi.kategoriProfesi',
-            'instansis.jenisInstansi'
+            'instansi.jenisInstansi'
         ])->orderBy('nama')->get();
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -364,7 +364,7 @@ class AlumniController extends Controller
             $detailProfesi = $alumni->latestDetailProfesi;
 
             // Ambil instansi terbaru, misal yang paling akhir (kamu bisa sesuaikan logicnya)
-            $instansi = $alumni->instansis->sortByDesc('instansi_id')->first();
+           $instansi = $alumni->instansi; // karena relasinya hasOne, tidak perlu sort
 
             $jenisInstansi = $instansi && $instansi->jenisInstansi ? $instansi->jenisInstansi->nama_jenis_instansi : '-';
             $kategoriProfesi = $detailProfesi && $detailProfesi->kategoriProfesi ? $detailProfesi->kategoriProfesi->nama : '-';
