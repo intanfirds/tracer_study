@@ -224,6 +224,12 @@
             display: flex;
             align-items: center;
         }
+
+        .readonly-input {
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+        }
         
         @media (max-width: 768px) {
             .logo-container {
@@ -244,6 +250,8 @@
                 font-size: 1.4rem;
             }
         }
+
+        
     </style>
 </head>
 <body>
@@ -286,12 +294,12 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Nama Alumni</label>
-                            <input type="text" class="form-control" value="{{ $alumni->nama }}" readonly>
+                            <input type="text" class="form-control readonly-input" value="{{ $alumni->nama }}" readonly>
                             <input type="hidden" name="alumni_id" value="{{ $alumni->alumni_id }}">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">NIM</label>
-                            <input type="text" class="form-control" value="{{ $alumni->NIM }}" readonly>
+                            <input type="text" class="form-control readonly-input" value="{{ $alumni->NIM }}" readonly>
                         </div>
                     </div>
                 </div>
