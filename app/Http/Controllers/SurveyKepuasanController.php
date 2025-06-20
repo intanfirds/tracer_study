@@ -20,8 +20,7 @@ class SurveyKepuasanController extends Controller
     {
         // Check if user is verified with token
         if (!Session::get('verified')) {
-            return redirect()->route('survey.token')
-                ->with('error', 'Silakan verifikasi token terlebih dahulu');
+            return redirect()->route('survey.token');
         }
 
         // Get instansi_id from session

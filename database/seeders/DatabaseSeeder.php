@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             JenisInstansiTableSeeder::class,
             InstansiSeeder::class,
             KategoriProfesiSeeder::class,
-            PermintaanPengisianSeeder::class,
             DetailProfesiAlumniSeeder::class,
             SurveyKepuasanLulusanSeeder::class,
             TokenAlumniSeeder::class,

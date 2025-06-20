@@ -125,15 +125,12 @@ function drawProfesiCharts() {
 
         const data = google.visualization.arrayToDataTable(dataArray);
         const options = {
-            title: chart.title,
             is3D: true,
             legend: { position: 'labeled' },
             pieSliceText: 'value',
             sliceVisibilityThreshold: 0,
             colors: ['0466c8','0353a4',"023e7d","002855","001845","001233","33415c","5c677d","7d8597","a5b1c2","c8d0e0","e0e6f2"],
             chartArea: {top: 10, bottom: 20, left: 10, right: 10, width: '100%', height: '80%'},
-            titlePosition: 'in', 
-            titleTextStyle: { fontSize: 16, bold: true }
         };
 
         const pieChart = new google.visualization.PieChart(element);
@@ -166,7 +163,6 @@ function drawSurveyCharts() {
 
         const data = google.visualization.arrayToDataTable(dataArray);
         const options = {
-            title: chart.title,
             colors: colors,
             is3D: true,
             legend: { position: 'labeled' },

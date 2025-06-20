@@ -28,7 +28,7 @@ class InstansiSeeder extends Seeder
             ],
             [   
                 'level_id' => 3,
-                'alumni_id' => 2,
+                'alumni_id' => 3,
                 'nama_instansi' => 'PT Inovasi Teknologi',
                 'nama_atasan' => 'Budi Setiawan',
                 'jenis_instansi_id' => 3,
